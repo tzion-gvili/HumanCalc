@@ -432,11 +432,9 @@ class HumanCalc {
         localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
         this.updateKooklotDisplay();
 
-        // Generate different hints based on hintType
-        let hint = '';
-        
         if (hintType === 1) {
             // Hint 1: Range or approximation
+            let hint = '';
             if (Number.isInteger(answer)) {
                 const range = Math.max(1, Math.floor(Math.abs(answer) * 0.2));
                 hint = `The answer is between ${answer - range} and ${answer + range}`;
@@ -444,36 +442,144 @@ class HumanCalc {
                 const rounded = Math.round(answer);
                 hint = `The answer is approximately ${rounded} (or close to it)`;
             }
+
+            hintDiv.textContent = `💡 Hint 1: ${hint}`;
+            hintDiv.style.display = 'block';
+            hintDiv.className = 'hint-display show';
+
+            // Play a sound
+            this.playSound(300, 0.2, 'sine');
         } else if (hintType === 2) {
-            // Hint 2: Operation clue or step-by-step guidance
-            if (question.includes('+')) {
-                hint = `Try adding the numbers step by step. Break it down into smaller parts if needed.`;
-            } else if (question.includes('-') || question.includes('−')) {
-                hint = `Subtract the smaller number from the larger number.`;
-            } else if (question.includes('×') || question.includes('*')) {
-                hint = `Multiply the numbers. Remember: multiplication is repeated addition.`;
-            } else if (question.includes('÷') || question.includes('/')) {
-                hint = `Divide the first number by the second. Think: how many times does the second number fit into the first?`;
-            } else if (question.includes('^')) {
-                hint = `This is a power operation. Multiply the base by itself the number of times shown by the exponent.`;
-            } else if (question.includes('√')) {
-                hint = `This is a square root. Find the number that, when multiplied by itself, gives the number under the root.`;
+            // Hint 2: Multiple choice with 4 options
+            this.showMultipleChoiceHint(index, exercise);
+        }
+    }
+
+    showMultipleChoiceHint(index, exercise) {
+        const answer = exercise.answer;
+        const question = exercise.question;
+
+        // Generate 3 wrong answers that are plausible
+        const wrongAnswers = this.generateWrongAnswers(answer);
+        
+        // Create array with correct and wrong answers
+        const allAnswers = [answer, ...wrongAnswers];
+        
+        // Shuffle the answers
+        const shuffledAnswers = this.shuffleArray([...allAnswers]);
+
+        // Display modal
+        document.getElementById('modalQuestion').textContent = question + ' = ?';
+        const container = document.getElementById('multipleChoiceContainer');
+        container.innerHTML = '';
+        document.getElementById('choiceFeedback').textContent = '';
+        document.getElementById('choiceFeedback').className = 'choice-feedback';
+
+        // Create answer buttons
+        shuffledAnswers.forEach((option, i) => {
+            const button = document.createElement('button');
+            button.className = 'choice-btn';
+            button.textContent = option;
+            button.onclick = () => this.checkChoiceAnswer(option, answer, index);
+            container.appendChild(button);
+        });
+
+        // Store the exercise index for reference
+        document.getElementById('hintModal').dataset.exerciseIndex = index;
+
+        // Show modal
+        document.getElementById('hintModal').style.display = 'block';
+
+        // Play a sound
+        this.playSound(400, 0.2, 'sine');
+    }
+
+    generateWrongAnswers(correctAnswer) {
+        const wrongAnswers = [];
+        const tolerance = 0.01;
+        const maxAttempts = 50;
+        let attempts = 0;
+        
+        // Generate 3 wrong answers
+        while (wrongAnswers.length < 3 && attempts < maxAttempts) {
+            attempts++;
+            let wrongAnswer;
+            
+            if (Number.isInteger(correctAnswer)) {
+                // For integers, generate answers that are plausible but not exact
+                const baseOffset = Math.max(1, Math.floor(Math.abs(correctAnswer) * 0.1) || 1);
+                const offset = Math.floor(Math.random() * (baseOffset * 2 + 5)) + 1;
+                const sign = Math.random() < 0.5 ? 1 : -1;
+                wrongAnswer = correctAnswer + (offset * sign);
+                
+                // Make sure it's different from correct answer and other wrong answers
+                if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
+                    wrongAnswers.push(wrongAnswer);
+                }
             } else {
-                // For algebra or complex problems
-                if (Number.isInteger(answer)) {
-                    hint = `The answer is a whole number. Try working backwards or substituting values.`;
-                } else {
-                    hint = `The answer might be a decimal. Be careful with your calculations.`;
+                // For decimals, generate answers with different decimal values
+                const absValue = Math.abs(correctAnswer);
+                const multiplier = absValue < 1 ? 0.5 : Math.max(0.1, absValue * 0.15);
+                const offset = (Math.random() * 2 - 1) * multiplier;
+                wrongAnswer = parseFloat((correctAnswer + offset).toFixed(3));
+                
+                // Make sure it's different enough from correct and other wrong answers
+                const isDifferent = Math.abs(wrongAnswer - correctAnswer) > tolerance;
+                const isUnique = !wrongAnswers.some(wa => Math.abs(wa - wrongAnswer) < tolerance);
+                
+                if (isDifferent && isUnique) {
+                    wrongAnswers.push(wrongAnswer);
                 }
             }
         }
+        
+        // If we couldn't generate enough, add some fallback wrong answers
+        while (wrongAnswers.length < 3) {
+            const fallback = correctAnswer + (wrongAnswers.length + 1) * 10;
+            if (!wrongAnswers.includes(fallback)) {
+                wrongAnswers.push(fallback);
+            }
+        }
+        
+        return wrongAnswers;
+    }
 
-        hintDiv.textContent = `💡 Hint ${hintType}: ${hint}`;
-        hintDiv.style.display = 'block';
-        hintDiv.className = 'hint-display show';
+    shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
 
-        // Play a sound
-        this.playSound(300, 0.2, 'sine');
+    checkChoiceAnswer(selectedAnswer, correctAnswer, exerciseIndex) {
+        const feedback = document.getElementById('choiceFeedback');
+        const tolerance = 0.01;
+        const selectedNum = typeof selectedAnswer === 'string' ? parseFloat(selectedAnswer) : selectedAnswer;
+        const isCorrect = Math.abs(selectedNum - correctAnswer) < tolerance;
+
+        // Disable all buttons
+        const buttons = document.querySelectorAll('.choice-btn');
+        buttons.forEach(btn => {
+            btn.disabled = true;
+            const btnValue = parseFloat(btn.textContent);
+            if (Math.abs(btnValue - correctAnswer) < tolerance) {
+                btn.classList.add('correct-choice');
+            } else if (Math.abs(btnValue - selectedNum) < tolerance) {
+                btn.classList.add('wrong-choice');
+            }
+        });
+
+        if (isCorrect) {
+            feedback.textContent = '✓ Correct! Great job!';
+            feedback.className = 'choice-feedback correct';
+            this.playSuccessSound();
+        } else {
+            feedback.textContent = `✗ Incorrect. The correct answer is ${correctAnswer}`;
+            feedback.className = 'choice-feedback incorrect';
+            this.playErrorSound();
+        }
     }
 
     updateKooklotDisplay() {
@@ -481,6 +587,14 @@ class HumanCalc {
     }
 }
 
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('hintModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
 
 // Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', () => {
