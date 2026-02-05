@@ -19,13 +19,41 @@ class HumanCalc {
     initAudio() {
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Resume audio context on first user interaction (required for mobile)
+            const resumeAudio = async () => {
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    try {
+                        await this.audioContext.resume();
+                    } catch (e) {
+                        console.log('Could not resume audio context:', e);
+                    }
+                }
+                // Remove listeners after first interaction
+                document.removeEventListener('touchstart', resumeAudio);
+                document.removeEventListener('click', resumeAudio);
+            };
+            
+            // Listen for first user interaction
+            document.addEventListener('touchstart', resumeAudio, { once: true });
+            document.addEventListener('click', resumeAudio, { once: true });
         } catch (e) {
             console.log('Web Audio API not supported');
         }
     }
 
-    playSound(frequency, duration, type = 'sine') {
+    async playSound(frequency, duration, type = 'sine') {
         if (!this.audioContext) return;
+
+        // Resume audio context if suspended (required for mobile browsers)
+        if (this.audioContext.state === 'suspended') {
+            try {
+                await this.audioContext.resume();
+            } catch (e) {
+                console.log('Could not resume audio context:', e);
+                return;
+            }
+        }
 
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
@@ -633,49 +661,63 @@ class HumanCalc {
         const candyEmojis = ['🍬', '🍭', '🍫', '🍪', '🍰', '🧁', '🍩', '🍯'];
         const numCandies = 8;
         
-        const rect = element.getBoundingClientRect();
-        const startX = rect.left + rect.width / 2;
-        const startY = rect.top + rect.height / 2;
-        
-        for (let i = 0; i < numCandies; i++) {
-            setTimeout(() => {
-                const candy = document.createElement('div');
-                candy.className = 'candy';
-                candy.textContent = candyEmojis[Math.floor(Math.random() * candyEmojis.length)];
-                
-                // Set initial position
-                candy.style.left = startX + 'px';
-                candy.style.top = startY + 'px';
-                candy.style.opacity = '1';
-                candy.style.transform = 'translate(0, 0) rotate(0deg)';
-                
-                document.body.appendChild(candy);
-                
-                // Calculate random direction and distance
-                const angle = (Math.PI * 2 * i) / numCandies + (Math.random() - 0.5) * 0.5;
-                const distance = 150 + Math.random() * 100;
-                const endX = Math.cos(angle) * distance;
-                const endY = Math.sin(angle) * distance - 50; // Slight upward arc
-                
-                // Random rotation
-                const rotation = Math.random() * 720 - 360; // -360 to 360 degrees
-                
-                // Trigger animation
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        candy.style.transform = `translate(${endX}px, ${endY}px) rotate(${rotation}deg)`;
-                        candy.style.opacity = '0';
-                    });
-                });
-                
-                // Remove after animation
+        // Use requestAnimationFrame to ensure element is rendered
+        requestAnimationFrame(() => {
+            const rect = element.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2;
+            const startY = rect.top + rect.height / 2;
+            
+            // Check if element is visible (mobile viewport might be different)
+            if (rect.width === 0 || rect.height === 0) {
+                console.log('Element not visible, skipping candy animation');
+                return;
+            }
+            
+            for (let i = 0; i < numCandies; i++) {
                 setTimeout(() => {
-                    if (candy.parentNode) {
-                        candy.parentNode.removeChild(candy);
-                    }
-                }, 2000);
-            }, i * 50); // Stagger the candies
-        }
+                    const candy = document.createElement('div');
+                    candy.className = 'candy';
+                    candy.textContent = candyEmojis[Math.floor(Math.random() * candyEmojis.length)];
+                    
+                    // Set initial position with better mobile support
+                    candy.style.position = 'fixed';
+                    candy.style.left = startX + 'px';
+                    candy.style.top = startY + 'px';
+                    candy.style.opacity = '1';
+                    candy.style.transform = 'translate(0, 0) rotate(0deg)';
+                    candy.style.willChange = 'transform, opacity'; // Optimize for mobile
+                    
+                    document.body.appendChild(candy);
+                    
+                    // Force reflow to ensure initial position is set
+                    candy.offsetHeight;
+                    
+                    // Calculate random direction and distance
+                    const angle = (Math.PI * 2 * i) / numCandies + (Math.random() - 0.5) * 0.5;
+                    const distance = 150 + Math.random() * 100;
+                    const endX = Math.cos(angle) * distance;
+                    const endY = Math.sin(angle) * distance - 50; // Slight upward arc
+                    
+                    // Random rotation
+                    const rotation = Math.random() * 720 - 360; // -360 to 360 degrees
+                    
+                    // Trigger animation with better mobile support
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            candy.style.transform = `translate(${endX}px, ${endY}px) rotate(${rotation}deg)`;
+                            candy.style.opacity = '0';
+                        });
+                    });
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        if (candy.parentNode) {
+                            candy.parentNode.removeChild(candy);
+                        }
+                    }, 2000);
+                }, i * 50); // Stagger the candies
+            }
+        });
     }
 }
 

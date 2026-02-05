@@ -641,5 +641,10 @@ footer {
                 opacity 2s ease-out;
     transform-origin: center;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    will-change: transform, opacity;
+    -webkit-transform: translateZ(0); /* Force hardware acceleration on mobile */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
