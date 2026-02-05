@@ -297,21 +297,21 @@ class HumanCalc {
             checkBtn.textContent = 'Check';
             checkBtn.onclick = () => this.checkAnswer(index);
 
-            const hintBtn = document.createElement('button');
-            hintBtn.className = 'hint-btn';
-            hintBtn.textContent = '💡 Hint (-1 Kooklot)';
-            hintBtn.onclick = () => this.showHint(index);
+            const hintBtn1 = document.createElement('button');
+            hintBtn1.className = 'hint-btn';
+            hintBtn1.textContent = '💡 Hint 1 (-1 Kooklot)';
+            hintBtn1.onclick = () => this.showHint(index, 1);
 
-            const calcBtn = document.createElement('button');
-            calcBtn.className = 'calc-btn-small';
-            calcBtn.textContent = '🔢 Calculator (-1 Kooklot)';
-            calcBtn.onclick = () => this.openCalculator();
+            const hintBtn2 = document.createElement('button');
+            hintBtn2.className = 'hint-btn hint-btn-2';
+            hintBtn2.textContent = '💡 Hint 2 (-1 Kooklot)';
+            hintBtn2.onclick = () => this.showHint(index, 2);
 
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'button-container';
             buttonContainer.appendChild(checkBtn);
-            buttonContainer.appendChild(hintBtn);
-            buttonContainer.appendChild(calcBtn);
+            buttonContainer.appendChild(hintBtn1);
+            buttonContainer.appendChild(hintBtn2);
 
             const feedback = document.createElement('div');
             feedback.className = 'feedback';
@@ -416,7 +416,7 @@ class HumanCalc {
         resultsContainer.classList.add('show');
     }
 
-    showHint(index) {
+    showHint(index, hintType) {
         if (this.kooklot < 1) {
             alert('Not enough Kooklot! You need at least 1 Kooklot to get a hint.');
             return;
@@ -425,25 +425,50 @@ class HumanCalc {
         const exercise = this.currentExercises[index];
         const hintDiv = document.getElementById(`hint-${index}`);
         const answer = exercise.answer;
+        const question = exercise.question;
 
         // Deduct Kooklot
         this.kooklot -= 1;
         localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
         this.updateKooklotDisplay();
 
-        // Generate hint based on the answer
+        // Generate different hints based on hintType
         let hint = '';
-        if (Number.isInteger(answer)) {
-            // For integer answers, show a range
-            const range = Math.max(1, Math.floor(Math.abs(answer) * 0.2));
-            hint = `The answer is between ${answer - range} and ${answer + range}`;
-        } else {
-            // For decimal answers, show first digit or approximation
-            const rounded = Math.round(answer);
-            hint = `The answer is approximately ${rounded} (or close to it)`;
+        
+        if (hintType === 1) {
+            // Hint 1: Range or approximation
+            if (Number.isInteger(answer)) {
+                const range = Math.max(1, Math.floor(Math.abs(answer) * 0.2));
+                hint = `The answer is between ${answer - range} and ${answer + range}`;
+            } else {
+                const rounded = Math.round(answer);
+                hint = `The answer is approximately ${rounded} (or close to it)`;
+            }
+        } else if (hintType === 2) {
+            // Hint 2: Operation clue or step-by-step guidance
+            if (question.includes('+')) {
+                hint = `Try adding the numbers step by step. Break it down into smaller parts if needed.`;
+            } else if (question.includes('-') || question.includes('−')) {
+                hint = `Subtract the smaller number from the larger number.`;
+            } else if (question.includes('×') || question.includes('*')) {
+                hint = `Multiply the numbers. Remember: multiplication is repeated addition.`;
+            } else if (question.includes('÷') || question.includes('/')) {
+                hint = `Divide the first number by the second. Think: how many times does the second number fit into the first?`;
+            } else if (question.includes('^')) {
+                hint = `This is a power operation. Multiply the base by itself the number of times shown by the exponent.`;
+            } else if (question.includes('√')) {
+                hint = `This is a square root. Find the number that, when multiplied by itself, gives the number under the root.`;
+            } else {
+                // For algebra or complex problems
+                if (Number.isInteger(answer)) {
+                    hint = `The answer is a whole number. Try working backwards or substituting values.`;
+                } else {
+                    hint = `The answer might be a decimal. Be careful with your calculations.`;
+                }
+            }
         }
 
-        hintDiv.textContent = `💡 Hint: ${hint}`;
+        hintDiv.textContent = `💡 Hint ${hintType}: ${hint}`;
         hintDiv.style.display = 'block';
         hintDiv.className = 'hint-display show';
 
@@ -451,114 +476,11 @@ class HumanCalc {
         this.playSound(300, 0.2, 'sine');
     }
 
-    openCalculator() {
-        if (this.kooklot < 1) {
-            alert('Not enough Kooklot! You need at least 1 Kooklot to use the calculator.');
-            return;
-        }
-
-        // Deduct Kooklot
-        this.kooklot -= 1;
-        localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
-        this.updateKooklotDisplay();
-
-        // Open calculator modal
-        document.getElementById('calculatorModal').style.display = 'block';
-        calcClear(); // Reset calculator
-
-        // Play a sound
-        this.playSound(400, 0.2, 'sine');
-    }
-
     updateKooklotDisplay() {
         document.getElementById('starsCount').textContent = this.kooklot;
     }
 }
 
-// Calculator functionality
-let calcValue = '0';
-let calcPreviousValue = null;
-window.calcOperation = null;
-let calcWaitingForValue = false;
-
-function calcNumber(num) {
-    if (calcWaitingForValue) {
-        calcValue = num;
-        calcWaitingForValue = false;
-    } else {
-        calcValue = calcValue === '0' ? num : calcValue + num;
-    }
-    document.getElementById('calcDisplay').value = calcValue;
-}
-
-function calcOperation(op) {
-    const inputValue = parseFloat(calcValue);
-    
-    if (calcPreviousValue === null) {
-        calcPreviousValue = inputValue;
-    } else if (window.calcOperation) {
-        const currentValue = calcPreviousValue || 0;
-        const newValue = calculate(currentValue, inputValue, window.calcOperation);
-        
-        calcValue = String(newValue);
-        calcPreviousValue = newValue;
-        document.getElementById('calcDisplay').value = calcValue;
-    }
-    
-    calcWaitingForValue = true;
-    window.calcOperation = op;
-}
-
-function calculate(firstValue, secondValue, operation) {
-    if (operation === '+') {
-        return firstValue + secondValue;
-    } else if (operation === '-') {
-        return firstValue - secondValue;
-    } else if (operation === '*') {
-        return firstValue * secondValue;
-    } else if (operation === '/') {
-        return firstValue / secondValue;
-    }
-    return secondValue;
-}
-
-function calcEquals() {
-    if (calcPreviousValue !== null && window.calcOperation) {
-        const inputValue = parseFloat(calcValue);
-        const newValue = calculate(calcPreviousValue, inputValue, window.calcOperation);
-        
-        calcValue = String(newValue);
-        document.getElementById('calcDisplay').value = calcValue;
-        calcPreviousValue = null;
-        window.calcOperation = null;
-        calcWaitingForValue = true;
-    }
-}
-
-function calcClear() {
-    calcValue = '0';
-    calcPreviousValue = null;
-    window.calcOperation = null;
-    calcWaitingForValue = false;
-    document.getElementById('calcDisplay').value = calcValue;
-}
-
-function calcDelete() {
-    if (calcValue.length > 1) {
-        calcValue = calcValue.slice(0, -1);
-    } else {
-        calcValue = '0';
-    }
-    document.getElementById('calcDisplay').value = calcValue;
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('calculatorModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
-}
 
 // Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', () => {
