@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HumanCalc - Math Practice for All Ages</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌟 HumanCalc 🌟</h1>
+            <p class="subtitle">Math Practice from Class 1 to Class 12</p>
+        </header>
+
+        <div class="main-content">
+            <div class="level-selector">
+                <label for="classLevel">Select Class Level:</label>
+                <select id="classLevel">
+                    <option value="1">Class 1 (Ages 7-8)</option>
+                    <option value="2">Class 2 (Ages 8-9)</option>
+                    <option value="3">Class 3 (Ages 9-10)</option>
+                    <option value="4">Class 4 (Ages 10-11)</option>
+                    <option value="5">Class 5 (Ages 11-12)</option>
+                    <option value="6">Class 6 (Ages 12-13)</option>
+                    <option value="7">Class 7 (Ages 13-14)</option>
+                    <option value="8">Class 8 (Ages 14-15)</option>
+                    <option value="9">Class 9 (Ages 15-16)</option>
+                    <option value="10">Class 10 (Ages 16-17)</option>
+                    <option value="11">Class 11 (Ages 17-18)</option>
+                    <option value="12">Class 12 (Ages 18+)</option>
+                </select>
+                <button id="startBtn" class="btn-primary">Start New Exercise Set</button>
+            </div>
+
+            <div class="stars-display">
+                <div class="stars-container">
+                    <span class="bread-icon">🍞</span>
+                    <span class="stars-label">Your Swinjot: </span>
+                    <span id="starsCount" class="stars-count">0</span>
+                    <span class="star-icon">⭐</span>
+                </div>
+            </div>
+
+            <div id="exercisesContainer" class="exercises-container"></div>
+
+            <div id="resultsContainer" class="results-container"></div>
+        </div>
+
+        <footer>
+            <p>TgSofts +9725914007</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
