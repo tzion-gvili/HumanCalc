@@ -382,7 +382,8 @@ class HumanCalc {
     }
 
     checkAllCompleted() {
-        const allCompleted = this.currentExercises.every(ex => ex.correct !== null);
+        // An exercise is completed if it has been checked (correct is not null) or disqualified
+        const allCompleted = this.currentExercises.every(ex => ex.correct !== null || ex.disqualified === true);
         
         if (allCompleted) {
             const allCorrect = this.currentExercises.every(ex => ex.correct === true);
@@ -569,7 +570,40 @@ class HumanCalc {
             feedback.textContent = `✗ Incorrect. The correct answer is ${correctAnswer}`;
             feedback.className = 'choice-feedback incorrect';
             this.playErrorSound();
+            
+            // Disqualify the exercise - mark it as incorrect
+            this.disqualifyExercise(exerciseIndex, correctAnswer);
         }
+    }
+
+    disqualifyExercise(index, correctAnswer) {
+        const exercise = this.currentExercises[index];
+        const exerciseDiv = document.getElementById(`exercise-${index}`);
+        const input = exerciseDiv.querySelector('.answer-input');
+        const checkBtn = exerciseDiv.querySelector('.check-btn');
+        const feedback = document.getElementById(`feedback-${index}`);
+        const hintBtns = exerciseDiv.querySelectorAll('.hint-btn');
+
+        // Mark exercise as incorrect
+        exercise.correct = false;
+        exercise.userAnswer = null;
+        exercise.disqualified = true;
+
+        // Disable input and buttons
+        input.disabled = true;
+        checkBtn.disabled = true;
+        hintBtns.forEach(btn => btn.disabled = true);
+
+        // Update visual feedback
+        exerciseDiv.classList.remove('correct', 'incorrect');
+        exerciseDiv.classList.add('incorrect');
+        feedback.textContent = `✗ Disqualified! You chose the wrong answer in the hint. Correct answer: ${correctAnswer}`;
+        feedback.className = 'feedback incorrect';
+
+        // Check if all exercises are completed
+        setTimeout(() => {
+            this.checkAllCompleted();
+        }, 500);
     }
 
     updateKooklotDisplay() {
