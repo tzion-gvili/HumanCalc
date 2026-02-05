@@ -6,10 +6,10 @@ A joyful and engaging web application for practicing mathematics from Class 1 to
 
 - **10 Exercises Per Set**: Each session includes 10 carefully generated math problems
 - **12 Class Levels**: From basic addition (Class 1) to advanced algebra and trigonometry (Class 12)
-- **Swinjot System**: Earn Swinjot by completing all exercises correctly
+- **Kooklot System**: Earn Kooklot by completing all exercises correctly
 - **Joyful Design**: Beautiful gradient colors and smooth animations
 - **Sweet Sounds**: Pleasant audio feedback for correct answers, errors, and celebrations
-- **Progress Tracking**: Your Swinjot are saved locally and persist between sessions
+- **Progress Tracking**: Your Kooklot are saved locally and persist between sessions
 
 ## How to Use
 
@@ -18,7 +18,7 @@ A joyful and engaging web application for practicing mathematics from Class 1 to
 3. Click "Start New Exercise Set" to begin
 4. Enter your answers and click "Check" (or press Enter)
 5. Complete all 10 exercises to see your results
-6. Earn Swinjot by getting all answers correct!
+6. Earn Kooklot by getting all answers correct!
 
 ## Class Levels
 

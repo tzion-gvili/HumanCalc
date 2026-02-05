@@ -4,14 +4,14 @@
 class HumanCalc {
     constructor() {
         this.currentExercises = [];
-        this.swinjot = parseInt(localStorage.getItem('humanCalcSwinjot') || '0');
+        this.kooklot = parseInt(localStorage.getItem('humanCalcKooklot') || '0');
         this.currentClassLevel = 1;
         this.audioContext = null;
         this.init();
     }
 
     init() {
-        this.updateSwinjotDisplay();
+        this.updateKooklotDisplay();
         this.setupEventListeners();
         this.initAudio();
     }
@@ -372,13 +372,13 @@ class HumanCalc {
         const resultsContainer = document.getElementById('resultsContainer');
         const correctCount = this.currentExercises.filter(ex => ex.correct === true).length;
         
-        let newSwinjot = 0;
+        let newKooklot = 0;
         if (allCorrect) {
-            // Award Swinjot equal to the class level (Level 1 = 1, Level 2 = 2, etc.)
-            newSwinjot = this.currentClassLevel;
-            this.swinjot += newSwinjot;
-            localStorage.setItem('humanCalcSwinjot', this.swinjot.toString());
-            this.updateSwinjotDisplay();
+            // Award Kooklot equal to the class level (Level 1 = 1, Level 2 = 2, etc.)
+            newKooklot = this.currentClassLevel;
+            this.kooklot += newKooklot;
+            localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
+            this.updateKooklotDisplay();
             this.playCelebrationSound();
         }
 
@@ -386,16 +386,16 @@ class HumanCalc {
             <div class="results-title">${allCorrect ? '🎉 Perfect Score! 🎉' : 'Exercise Set Complete!'}</div>
             <div class="results-score">You got ${correctCount} out of 10 correct!</div>
             ${allCorrect ? `
-                <div class="new-stars">⭐ You earned ${newSwinjot} Swinjot! ⭐</div>
+                <div class="new-stars">⭐ You earned ${newKooklot} Kooklot! ⭐</div>
                 <div class="celebration">🌟✨🎊✨🌟</div>
-            ` : '<div style="font-size: 1.2em; margin-top: 20px;">Keep practicing to earn Swinjot!</div>'}
+            ` : '<div style="font-size: 1.2em; margin-top: 20px;">Keep practicing to earn Kooklot!</div>'}
         `;
         
         resultsContainer.classList.add('show');
     }
 
-    updateSwinjotDisplay() {
-        document.getElementById('starsCount').textContent = this.swinjot;
+    updateKooklotDisplay() {
+        document.getElementById('starsCount').textContent = this.kooklot;
     }
 }
 
