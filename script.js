@@ -297,13 +297,35 @@ class HumanCalc {
             checkBtn.textContent = 'Check';
             checkBtn.onclick = () => this.checkAnswer(index);
 
+            const hintBtn = document.createElement('button');
+            hintBtn.className = 'hint-btn';
+            hintBtn.textContent = '💡 Hint (-1 Kooklot)';
+            hintBtn.onclick = () => this.showHint(index);
+
+            const calcBtn = document.createElement('button');
+            calcBtn.className = 'calc-btn-small';
+            calcBtn.textContent = '🔢 Calculator (-1 Kooklot)';
+            calcBtn.onclick = () => this.openCalculator();
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+            buttonContainer.appendChild(checkBtn);
+            buttonContainer.appendChild(hintBtn);
+            buttonContainer.appendChild(calcBtn);
+
             const feedback = document.createElement('div');
             feedback.className = 'feedback';
             feedback.id = `feedback-${index}`;
 
+            const hintDiv = document.createElement('div');
+            hintDiv.className = 'hint-display';
+            hintDiv.id = `hint-${index}`;
+            hintDiv.style.display = 'none';
+
             questionDiv.appendChild(input);
-            questionDiv.appendChild(checkBtn);
             exerciseDiv.appendChild(questionDiv);
+            exerciseDiv.appendChild(buttonContainer);
+            exerciseDiv.appendChild(hintDiv);
             exerciseDiv.appendChild(feedback);
             container.appendChild(exerciseDiv);
         });
@@ -394,8 +416,147 @@ class HumanCalc {
         resultsContainer.classList.add('show');
     }
 
+    showHint(index) {
+        if (this.kooklot < 1) {
+            alert('Not enough Kooklot! You need at least 1 Kooklot to get a hint.');
+            return;
+        }
+
+        const exercise = this.currentExercises[index];
+        const hintDiv = document.getElementById(`hint-${index}`);
+        const answer = exercise.answer;
+
+        // Deduct Kooklot
+        this.kooklot -= 1;
+        localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
+        this.updateKooklotDisplay();
+
+        // Generate hint based on the answer
+        let hint = '';
+        if (Number.isInteger(answer)) {
+            // For integer answers, show a range
+            const range = Math.max(1, Math.floor(Math.abs(answer) * 0.2));
+            hint = `The answer is between ${answer - range} and ${answer + range}`;
+        } else {
+            // For decimal answers, show first digit or approximation
+            const rounded = Math.round(answer);
+            hint = `The answer is approximately ${rounded} (or close to it)`;
+        }
+
+        hintDiv.textContent = `💡 Hint: ${hint}`;
+        hintDiv.style.display = 'block';
+        hintDiv.className = 'hint-display show';
+
+        // Play a sound
+        this.playSound(300, 0.2, 'sine');
+    }
+
+    openCalculator() {
+        if (this.kooklot < 1) {
+            alert('Not enough Kooklot! You need at least 1 Kooklot to use the calculator.');
+            return;
+        }
+
+        // Deduct Kooklot
+        this.kooklot -= 1;
+        localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
+        this.updateKooklotDisplay();
+
+        // Open calculator modal
+        document.getElementById('calculatorModal').style.display = 'block';
+        calcClear(); // Reset calculator
+
+        // Play a sound
+        this.playSound(400, 0.2, 'sine');
+    }
+
     updateKooklotDisplay() {
         document.getElementById('starsCount').textContent = this.kooklot;
+    }
+}
+
+// Calculator functionality
+let calcValue = '0';
+let calcPreviousValue = null;
+window.calcOperation = null;
+let calcWaitingForValue = false;
+
+function calcNumber(num) {
+    if (calcWaitingForValue) {
+        calcValue = num;
+        calcWaitingForValue = false;
+    } else {
+        calcValue = calcValue === '0' ? num : calcValue + num;
+    }
+    document.getElementById('calcDisplay').value = calcValue;
+}
+
+function calcOperation(op) {
+    const inputValue = parseFloat(calcValue);
+    
+    if (calcPreviousValue === null) {
+        calcPreviousValue = inputValue;
+    } else if (window.calcOperation) {
+        const currentValue = calcPreviousValue || 0;
+        const newValue = calculate(currentValue, inputValue, window.calcOperation);
+        
+        calcValue = String(newValue);
+        calcPreviousValue = newValue;
+        document.getElementById('calcDisplay').value = calcValue;
+    }
+    
+    calcWaitingForValue = true;
+    window.calcOperation = op;
+}
+
+function calculate(firstValue, secondValue, operation) {
+    if (operation === '+') {
+        return firstValue + secondValue;
+    } else if (operation === '-') {
+        return firstValue - secondValue;
+    } else if (operation === '*') {
+        return firstValue * secondValue;
+    } else if (operation === '/') {
+        return firstValue / secondValue;
+    }
+    return secondValue;
+}
+
+function calcEquals() {
+    if (calcPreviousValue !== null && window.calcOperation) {
+        const inputValue = parseFloat(calcValue);
+        const newValue = calculate(calcPreviousValue, inputValue, window.calcOperation);
+        
+        calcValue = String(newValue);
+        document.getElementById('calcDisplay').value = calcValue;
+        calcPreviousValue = null;
+        window.calcOperation = null;
+        calcWaitingForValue = true;
+    }
+}
+
+function calcClear() {
+    calcValue = '0';
+    calcPreviousValue = null;
+    window.calcOperation = null;
+    calcWaitingForValue = false;
+    document.getElementById('calcDisplay').value = calcValue;
+}
+
+function calcDelete() {
+    if (calcValue.length > 1) {
+        calcValue = calcValue.slice(0, -1);
+    } else {
+        calcValue = '0';
+    }
+    document.getElementById('calcDisplay').value = calcValue;
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('calculatorModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
     }
 }
 

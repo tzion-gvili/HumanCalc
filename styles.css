@@ -271,6 +271,57 @@ header h1 {
     gap: 10px;
 }
 
+.button-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.hint-btn, .calc-btn-small {
+    padding: 8px 15px;
+    background: linear-gradient(45deg, #f9ca24, #f0932b);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.hint-btn:hover, .calc-btn-small:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(249, 202, 36, 0.4);
+}
+
+.hint-btn:active, .calc-btn-small:active {
+    transform: scale(0.98);
+}
+
+.hint-display {
+    margin-top: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, #fff9e6, #fff5d6);
+    border: 2px solid #f9ca24;
+    border-radius: 10px;
+    font-size: 1em;
+    color: #856404;
+    font-weight: bold;
+    display: none;
+    animation: hintAppear 0.3s ease;
+}
+
+.hint-display.show {
+    display: block;
+}
+
+@keyframes hintAppear {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .exercise-number {
     background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
     color: white;
@@ -381,6 +432,128 @@ header h1 {
     50% { transform: translateY(-20px); }
 }
 
+/* Calculator Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.close-modal {
+    font-size: 2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.close-modal:hover {
+    transform: scale(1.2);
+}
+
+.calculator {
+    padding: 20px;
+}
+
+.calculator-display {
+    margin-bottom: 15px;
+}
+
+.calculator-display input {
+    width: 100%;
+    padding: 20px;
+    font-size: 2em;
+    text-align: right;
+    border: 3px solid #e0e0e0;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    background: #f8f9fa;
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.calc-btn {
+    padding: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    color: #333;
+}
+
+.calc-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.calc-btn:active {
+    transform: scale(0.95);
+}
+
+.calc-operator {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.calc-clear {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    color: white;
+}
+
+.calc-equals {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    color: white;
+    grid-row: span 2;
+}
+
+.calc-zero {
+    grid-column: span 2;
+}
+
 footer {
     text-align: center;
     margin-top: 30px;
@@ -407,6 +580,19 @@ footer {
     .exercise-question {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .button-container {
+        flex-direction: column;
+    }
+
+    .hint-btn, .calc-btn-small {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
     }
 }
 

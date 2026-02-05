@@ -51,6 +51,41 @@
             <div id="resultsContainer" class="results-container"></div>
         </div>
 
+        <!-- Calculator Modal -->
+        <div id="calculatorModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Calculator</h2>
+                    <span class="close-modal" onclick="document.getElementById('calculatorModal').style.display='none'">&times;</span>
+                </div>
+                <div class="calculator">
+                    <div class="calculator-display">
+                        <input type="text" id="calcDisplay" readonly value="0">
+                    </div>
+                    <div class="calculator-buttons">
+                        <button onclick="calcClear()" class="calc-btn calc-clear">C</button>
+                        <button onclick="calcDelete()" class="calc-btn calc-clear">⌫</button>
+                        <button onclick="calcOperation('/')" class="calc-btn calc-operator">÷</button>
+                        <button onclick="calcOperation('*')" class="calc-btn calc-operator">×</button>
+                        <button onclick="calcNumber('7')" class="calc-btn">7</button>
+                        <button onclick="calcNumber('8')" class="calc-btn">8</button>
+                        <button onclick="calcNumber('9')" class="calc-btn">9</button>
+                        <button onclick="calcOperation('-')" class="calc-btn calc-operator">−</button>
+                        <button onclick="calcNumber('4')" class="calc-btn">4</button>
+                        <button onclick="calcNumber('5')" class="calc-btn">5</button>
+                        <button onclick="calcNumber('6')" class="calc-btn">6</button>
+                        <button onclick="calcOperation('+')" class="calc-btn calc-operator">+</button>
+                        <button onclick="calcNumber('1')" class="calc-btn">1</button>
+                        <button onclick="calcNumber('2')" class="calc-btn">2</button>
+                        <button onclick="calcNumber('3')" class="calc-btn">3</button>
+                        <button onclick="calcEquals()" class="calc-btn calc-equals" rowspan="2">=</button>
+                        <button onclick="calcNumber('0')" class="calc-btn calc-zero">0</button>
+                        <button onclick="calcNumber('.')" class="calc-btn">.</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer>
             <p>TgSofts +9725914007</p>
         </footer>
