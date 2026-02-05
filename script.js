@@ -566,6 +566,15 @@ class HumanCalc {
             feedback.textContent = '✓ Correct! Great job!';
             feedback.className = 'choice-feedback correct';
             this.playSuccessSound();
+            
+            // Auto-fill the answer in the exercise input field
+            const exerciseDiv = document.getElementById(`exercise-${exerciseIndex}`);
+            const input = exerciseDiv.querySelector('.answer-input');
+            if (input && !input.disabled) {
+                input.value = correctAnswer;
+                // Optionally auto-check the answer
+                // this.checkAnswer(exerciseIndex);
+            }
         } else {
             feedback.textContent = `✗ Incorrect. The correct answer is ${correctAnswer}`;
             feedback.className = 'choice-feedback incorrect';
