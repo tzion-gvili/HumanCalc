@@ -299,12 +299,12 @@ class HumanCalc {
 
             const hintBtn1 = document.createElement('button');
             hintBtn1.className = 'hint-btn';
-            hintBtn1.textContent = '💡 Hint 1 (-1 Kooklot)';
+            hintBtn1.textContent = '💡 Hint 1';
             hintBtn1.onclick = () => this.showHint(index, 1);
 
             const hintBtn2 = document.createElement('button');
             hintBtn2.className = 'hint-btn hint-btn-2';
-            hintBtn2.textContent = '💡 Hint 2 (-1 Kooklot)';
+            hintBtn2.textContent = '💡 Hint 2';
             hintBtn2.onclick = () => this.showHint(index, 2);
 
             const buttonContainer = document.createElement('div');
@@ -417,20 +417,10 @@ class HumanCalc {
     }
 
     showHint(index, hintType) {
-        if (this.kooklot < 1) {
-            alert('Not enough Kooklot! You need at least 1 Kooklot to get a hint.');
-            return;
-        }
-
         const exercise = this.currentExercises[index];
         const hintDiv = document.getElementById(`hint-${index}`);
         const answer = exercise.answer;
         const question = exercise.question;
-
-        // Deduct Kooklot
-        this.kooklot -= 1;
-        localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
-        this.updateKooklotDisplay();
 
         if (hintType === 1) {
             // Hint 1: Range or approximation
