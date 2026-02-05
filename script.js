@@ -4,14 +4,14 @@
 class HumanCalc {
     constructor() {
         this.currentExercises = [];
-        this.kooklot = parseInt(localStorage.getItem('humanCalcKooklot') || '0');
+        this.coins = parseInt(localStorage.getItem('humanCalcCoins') || '0');
         this.currentClassLevel = 1;
         this.audioContext = null;
         this.init();
     }
 
     init() {
-        this.updateKooklotDisplay();
+        this.updateCoinsDisplay();
         this.setupEventListeners();
         this.initAudio();
     }
@@ -66,6 +66,33 @@ class HumanCalc {
                 this.playSound(freq, 0.3, 'sine');
             }, index * 100);
         });
+    }
+
+    playCandySound() {
+        // Play a sweet, addicting melody for candy throwing
+        // A playful, ascending melody that sounds like a reward
+        const candyMelody = [
+            { freq: 523.25, duration: 0.15, type: 'sine' },  // C
+            { freq: 659.25, duration: 0.15, type: 'sine' },  // E
+            { freq: 783.99, duration: 0.15, type: 'sine' },  // G
+            { freq: 987.77, duration: 0.2, type: 'sine' },   // B
+            { freq: 1046.50, duration: 0.25, type: 'sine' }, // C (high)
+            { freq: 1318.51, duration: 0.3, type: 'sine' }   // E (high)
+        ];
+        
+        candyMelody.forEach((note, index) => {
+            setTimeout(() => {
+                this.playSound(note.freq, note.duration, note.type);
+            }, index * 80);
+        });
+        
+        // Add some sparkle sounds with higher frequencies
+        setTimeout(() => {
+            this.playSound(1567.98, 0.2, 'triangle'); // G (high)
+        }, 200);
+        setTimeout(() => {
+            this.playSound(1975.53, 0.2, 'triangle'); // B (high)
+        }, 300);
     }
 
     setupEventListeners() {
@@ -363,6 +390,12 @@ class HumanCalc {
             feedback.textContent = '✓ Correct! Great job!';
             feedback.className = 'feedback correct';
             this.playSuccessSound();
+            
+            // Throw candies if no hint was used
+            if (!exercise.hintUsed) {
+                this.playCandySound();
+                this.throwCandies(exerciseDiv);
+            }
         } else {
             feedback.textContent = `✗ Incorrect. The correct answer is ${exercise.answer}`;
             feedback.className = 'feedback incorrect';
@@ -389,13 +422,13 @@ class HumanCalc {
         const resultsContainer = document.getElementById('resultsContainer');
         const correctCount = this.currentExercises.filter(ex => ex.correct === true).length;
         
-        let newKooklot = 0;
+        let newCoins = 0;
         if (allCorrect) {
-            // Award Kooklot equal to the class level (Level 1 = 1, Level 2 = 2, etc.)
-            newKooklot = this.currentClassLevel;
-            this.kooklot += newKooklot;
-            localStorage.setItem('humanCalcKooklot', this.kooklot.toString());
-            this.updateKooklotDisplay();
+            // Award Coins equal to the class level (Level 1 = 1, Level 2 = 2, etc.)
+            newCoins = this.currentClassLevel;
+            this.coins += newCoins;
+            localStorage.setItem('humanCalcCoins', this.coins.toString());
+            this.updateCoinsDisplay();
             this.playCelebrationSound();
         }
 
@@ -403,9 +436,9 @@ class HumanCalc {
             <div class="results-title">${allCorrect ? '🎉 Perfect Score! 🎉' : 'Exercise Set Complete!'}</div>
             <div class="results-score">You got ${correctCount} out of 10 correct!</div>
             ${allCorrect ? `
-                <div class="new-stars">⭐ You earned ${newKooklot} Kooklot! ⭐</div>
+                <div class="new-stars">🪙 You earned ${newCoins} Coins! 🪙</div>
                 <div class="celebration">🌟✨🎊✨🌟</div>
-            ` : '<div style="font-size: 1.2em; margin-top: 20px;">Keep practicing to earn Kooklot!</div>'}
+            ` : '<div style="font-size: 1.2em; margin-top: 20px;">Keep practicing to earn Coins!</div>'}
         `;
         
         resultsContainer.classList.add('show');
@@ -413,6 +446,9 @@ class HumanCalc {
 
     showHint(index, hintType) {
         const exercise = this.currentExercises[index];
+        
+        // Mark that hint was used for this exercise
+        exercise.hintUsed = true;
         
         // Show multiple choice hint
         this.showMultipleChoiceHint(index, exercise);
@@ -589,8 +625,57 @@ class HumanCalc {
         }, 500);
     }
 
-    updateKooklotDisplay() {
-        document.getElementById('starsCount').textContent = this.kooklot;
+    updateCoinsDisplay() {
+        document.getElementById('starsCount').textContent = this.coins;
+    }
+
+    throwCandies(element) {
+        const candyEmojis = ['🍬', '🍭', '🍫', '🍪', '🍰', '🧁', '🍩', '🍯'];
+        const numCandies = 8;
+        
+        const rect = element.getBoundingClientRect();
+        const startX = rect.left + rect.width / 2;
+        const startY = rect.top + rect.height / 2;
+        
+        for (let i = 0; i < numCandies; i++) {
+            setTimeout(() => {
+                const candy = document.createElement('div');
+                candy.className = 'candy';
+                candy.textContent = candyEmojis[Math.floor(Math.random() * candyEmojis.length)];
+                
+                // Set initial position
+                candy.style.left = startX + 'px';
+                candy.style.top = startY + 'px';
+                candy.style.opacity = '1';
+                candy.style.transform = 'translate(0, 0) rotate(0deg)';
+                
+                document.body.appendChild(candy);
+                
+                // Calculate random direction and distance
+                const angle = (Math.PI * 2 * i) / numCandies + (Math.random() - 0.5) * 0.5;
+                const distance = 150 + Math.random() * 100;
+                const endX = Math.cos(angle) * distance;
+                const endY = Math.sin(angle) * distance - 50; // Slight upward arc
+                
+                // Random rotation
+                const rotation = Math.random() * 720 - 360; // -360 to 360 degrees
+                
+                // Trigger animation
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        candy.style.transform = `translate(${endX}px, ${endY}px) rotate(${rotation}deg)`;
+                        candy.style.opacity = '0';
+                    });
+                });
+                
+                // Remove after animation
+                setTimeout(() => {
+                    if (candy.parentNode) {
+                        candy.parentNode.removeChild(candy);
+                    }
+                }, 2000);
+            }, i * 50); // Stagger the candies
+        }
     }
 }
 

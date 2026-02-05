@@ -146,45 +146,50 @@ header h1 {
     margin-right: 5px;
 }
 
-.meat-patties-icon {
+.coins-icon {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 5px;
     margin-right: 10px;
     vertical-align: middle;
-    animation: pattiesBounce 2s ease infinite;
+    animation: coinsBounce 2s ease infinite;
 }
 
-.patty {
+.coin {
+    font-size: 1.8em;
     display: inline-block;
-    width: 20px;
-    height: 12px;
-    background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #8B4513 100%);
-    border-radius: 50%;
-    box-shadow: 
-        0 2px 4px rgba(139, 69, 19, 0.5),
-        inset 0 1px 2px rgba(255, 255, 255, 0.2),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     position: relative;
-    transform: rotate(-5deg);
+    animation: coinSpin 3s ease infinite;
 }
 
-.patty:nth-child(1) {
-    transform: rotate(5deg);
-    animation: pattyPulse 2s ease infinite 0s;
+.coin-gold {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) 
+            drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
 }
 
-.patty:nth-child(2) {
-    transform: rotate(-3deg);
-    animation: pattyPulse 2s ease infinite 0.2s;
+.coin-silver {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) 
+            drop-shadow(0 0 8px rgba(192, 192, 192, 0.6));
+    color: #C0C0C0;
+    text-shadow: 0 0 10px rgba(192, 192, 192, 0.8);
 }
 
-.patty:nth-child(3) {
-    transform: rotate(8deg);
-    animation: pattyPulse 2s ease infinite 0.4s;
+.coin:nth-child(1) {
+    animation: coinSpin 3s ease infinite 0s;
 }
 
-@keyframes pattiesBounce {
+.coin:nth-child(2) {
+    animation: coinSpin 3s ease infinite 0.4s;
+}
+
+.coin:nth-child(3) {
+    animation: coinSpin 3s ease infinite 0.8s;
+}
+
+@keyframes coinsBounce {
     0%, 100% { 
         transform: translateY(0) scale(1);
     }
@@ -193,14 +198,18 @@ header h1 {
     }
 }
 
-@keyframes pattyPulse {
+@keyframes coinSpin {
     0%, 100% { 
-        transform: scale(1);
-        opacity: 1;
+        transform: rotateY(0deg) scale(1);
+    }
+    25% {
+        transform: rotateY(90deg) scale(1.1);
     }
     50% { 
-        transform: scale(1.1);
-        opacity: 0.9;
+        transform: rotateY(180deg) scale(1);
+    }
+    75% {
+        transform: rotateY(270deg) scale(1.1);
     }
 }
 
@@ -620,5 +629,17 @@ footer {
     .modal-question {
         font-size: 1.2em;
     }
+}
+
+/* Candy Animation */
+.candy {
+    position: fixed;
+    font-size: 2em;
+    pointer-events: none;
+    z-index: 10000;
+    transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                opacity 2s ease-out;
+    transform-origin: center;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
