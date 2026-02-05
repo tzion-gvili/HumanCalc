@@ -297,21 +297,15 @@ class HumanCalc {
             checkBtn.textContent = 'Check';
             checkBtn.onclick = () => this.checkAnswer(index);
 
-            const hintBtn1 = document.createElement('button');
-            hintBtn1.className = 'hint-btn';
-            hintBtn1.textContent = '💡 Hint 1';
-            hintBtn1.onclick = () => this.showHint(index, 1);
-
-            const hintBtn2 = document.createElement('button');
-            hintBtn2.className = 'hint-btn hint-btn-2';
-            hintBtn2.textContent = '💡 Hint 2';
-            hintBtn2.onclick = () => this.showHint(index, 2);
+            const hintBtn = document.createElement('button');
+            hintBtn.className = 'hint-btn';
+            hintBtn.textContent = '💡 Hint';
+            hintBtn.onclick = () => this.showHint(index, 2);
 
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'button-container';
             buttonContainer.appendChild(checkBtn);
-            buttonContainer.appendChild(hintBtn1);
-            buttonContainer.appendChild(hintBtn2);
+            buttonContainer.appendChild(hintBtn);
 
             const feedback = document.createElement('div');
             feedback.className = 'feedback';
@@ -419,31 +413,9 @@ class HumanCalc {
 
     showHint(index, hintType) {
         const exercise = this.currentExercises[index];
-        const hintDiv = document.getElementById(`hint-${index}`);
-        const answer = exercise.answer;
-        const question = exercise.question;
-
-        if (hintType === 1) {
-            // Hint 1: Range or approximation
-            let hint = '';
-            if (Number.isInteger(answer)) {
-                const range = Math.max(1, Math.floor(Math.abs(answer) * 0.2));
-                hint = `The answer is between ${answer - range} and ${answer + range}`;
-            } else {
-                const rounded = Math.round(answer);
-                hint = `The answer is approximately ${rounded} (or close to it)`;
-            }
-
-            hintDiv.textContent = `💡 Hint 1: ${hint}`;
-            hintDiv.style.display = 'block';
-            hintDiv.className = 'hint-display show';
-
-            // Play a sound
-            this.playSound(300, 0.2, 'sine');
-        } else if (hintType === 2) {
-            // Hint 2: Multiple choice with 4 options
-            this.showMultipleChoiceHint(index, exercise);
-        }
+        
+        // Show multiple choice hint
+        this.showMultipleChoiceHint(index, exercise);
     }
 
     showMultipleChoiceHint(index, exercise) {
@@ -591,7 +563,7 @@ class HumanCalc {
         const input = exerciseDiv.querySelector('.answer-input');
         const checkBtn = exerciseDiv.querySelector('.check-btn');
         const feedback = document.getElementById(`feedback-${index}`);
-        const hintBtns = exerciseDiv.querySelectorAll('.hint-btn');
+        const hintBtn = exerciseDiv.querySelector('.hint-btn');
 
         // Mark exercise as incorrect
         exercise.correct = false;
@@ -601,7 +573,9 @@ class HumanCalc {
         // Disable input and buttons
         input.disabled = true;
         checkBtn.disabled = true;
-        hintBtns.forEach(btn => btn.disabled = true);
+        if (hintBtn) {
+            hintBtn.disabled = true;
+        }
 
         // Update visual feedback
         exerciseDiv.classList.remove('correct', 'incorrect');

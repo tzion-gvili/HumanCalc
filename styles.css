@@ -280,7 +280,7 @@ header h1 {
 
 .hint-btn {
     padding: 8px 15px;
-    background: linear-gradient(45deg, #f9ca24, #f0932b);
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
     color: white;
     border: none;
     border-radius: 15px;
@@ -291,16 +291,8 @@ header h1 {
     font-family: inherit;
 }
 
-.hint-btn-2 {
-    background: linear-gradient(45deg, #4ecdc4, #44a08d);
-}
-
 .hint-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(249, 202, 36, 0.4);
-}
-
-.hint-btn-2:hover {
     box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
 }
 
