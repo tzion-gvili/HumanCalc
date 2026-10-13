@@ -1,40 +1,471 @@
-// HumanCalc - Math Practice Application
+// HumanCalc - חידות של תנועה, משקל וכוח
 // TgSofts +9725914007
+
+const QUESTIONS_PER_GAME = 5;
+
+const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const pick = (list) => list[Math.floor(Math.random() * list.length)];
+const fmt = (n) => n.toLocaleString('he-IL');
+
+const TOPICS = {
+    speed: { name: 'מהירות, זמן ודרך', icon: '⏱️' },
+    weight: { name: 'משקלים ומחירים', icon: '⚖️' },
+    force: { name: 'כוח ותוצאות', icon: '💥' }
+};
+
+// Each generator picks numbers so the answer always comes out whole.
+const GENERATORS = {
+    speed: [
+        () => {
+            const v = pick([600, 700, 800, 900]);
+            const t = rnd(2, 6);
+            const d = v * t;
+            return {
+                icon: '✈️',
+                text: `מטוס טס במהירות של ${fmt(v)} קמ״ש. המרחק ליעד הוא ${fmt(d)} ק״מ. כמה שעות תימשך הטיסה?`,
+                answer: t, unit: 'שעות',
+                hint: 'זמן = דרך ÷ מהירות',
+                explain: `${fmt(d)} ÷ ${fmt(v)} = ${t} שעות`
+            };
+        },
+        () => {
+            const v = pick([20, 25, 30, 40]);
+            const t = rnd(3, 10);
+            return {
+                icon: '🚢',
+                text: `ספינה שטה במהירות של ${v} קמ״ש במשך ${t} שעות. איזה מרחק היא עברה?`,
+                answer: v * t, unit: 'ק״מ',
+                hint: 'דרך = מהירות × זמן',
+                explain: `${v} × ${t} = ${fmt(v * t)} ק״מ`
+            };
+        },
+        () => {
+            const v = pick([200, 250, 400, 500, 800, 1000]);
+            const t = rnd(3, 12);
+            const d = v * t;
+            return {
+                icon: '🚀',
+                text: `טיל טס במהירות של ${fmt(v)} מטר בשנייה. המטרה נמצאת במרחק ${fmt(d)} מטר. כמה שניות ייקח לטיל להגיע?`,
+                answer: t, unit: 'שניות',
+                hint: 'זמן = דרך ÷ מהירות',
+                explain: `${fmt(d)} ÷ ${fmt(v)} = ${t} שניות`
+            };
+        },
+        () => {
+            const r = pick([2, 3, 4, 5]);
+            const t = rnd(10, 30);
+            const h = r * t;
+            return {
+                icon: '🎈',
+                text: `כדור פורח עולה ${r} מטר בכל דקה. כמה דקות ייקח לו להגיע לגובה ${fmt(h)} מטר?`,
+                answer: t, unit: 'דקות',
+                hint: 'זמן = גובה ÷ מהירות העלייה',
+                explain: `${fmt(h)} ÷ ${r} = ${t} דקות`
+            };
+        },
+        () => {
+            const v = pick([50, 60, 70, 80, 90]);
+            const t = rnd(2, 5);
+            const d = v * t;
+            return {
+                icon: '🚚',
+                text: `משאית נסעה ${fmt(d)} ק״מ ב-${t} שעות. מה הייתה המהירות הממוצעת שלה?`,
+                answer: v, unit: 'קמ״ש',
+                hint: 'מהירות = דרך ÷ זמן',
+                explain: `${fmt(d)} ÷ ${t} = ${v} קמ״ש`
+            };
+        },
+        () => {
+            const v1 = pick([40, 50, 60, 70, 80]);
+            const v2 = pick([40, 50, 60, 70, 80]);
+            const t = rnd(1, 4);
+            const d = (v1 + v2) * t;
+            return {
+                icon: '🚚',
+                text: `שתי משאיות יוצאות באותו רגע זו לקראת זו. המרחק ביניהן ${fmt(d)} ק״מ. אחת נוסעת ${v1} קמ״ש והשנייה ${v2} קמ״ש. בעוד כמה שעות הן ייפגשו?`,
+                answer: t, unit: 'שעות',
+                hint: 'כשנוסעים זה לקראת זה, מחברים את המהירויות. ואז: זמן = דרך ÷ מהירות',
+                explain: `${v1} + ${v2} = ${v1 + v2} קמ״ש ביחד. ${fmt(d)} ÷ ${v1 + v2} = ${t} שעות`
+            };
+        },
+        () => {
+            const start = rnd(6, 12);
+            const v = pick([500, 600, 800]);
+            const t = rnd(2, 5);
+            const d = v * t;
+            return {
+                icon: '🛫',
+                text: `מטוס ממריא בשעה ${start}:00 וטס ${fmt(d)} ק״מ במהירות של ${v} קמ״ש. באיזו שעה הוא ינחת? (כתבו רק את השעה)`,
+                answer: start + t, unit: ':00',
+                hint: 'קודם חשבו כמה שעות הטיסה (דרך ÷ מהירות), ואז הוסיפו לשעת ההמראה',
+                explain: `${fmt(d)} ÷ ${v} = ${t} שעות. ${start} + ${t} = ${start + t}:00`
+            };
+        }
+    ],
+
+    weight: [
+        () => {
+            const c = pick([20, 25, 40, 50]);
+            const n = rnd(10, 40);
+            const max = c * n;
+            return {
+                icon: '🚚',
+                text: `משאית יכולה להעמיס עד ${fmt(max)} ק״ג. כל ארגז שוקל ${c} ק״ג. כמה ארגזים לכל היותר אפשר להעמיס עליה?`,
+                answer: n, unit: 'ארגזים',
+                hint: 'מספר ארגזים = המשקל המקסימלי ÷ משקל ארגז אחד',
+                explain: `${fmt(max)} ÷ ${c} = ${n} ארגזים`
+            };
+        },
+        () => {
+            const n = rnd(5, 20);
+            const k = pick([10, 20, 25]);
+            const p = pick([50, 80, 100, 120]);
+            const total = n * k * p;
+            return {
+                icon: '🚢',
+                text: `ספינת משא מובילה ${n} מכולות. כל מכולה שוקלת ${k} טון. ההובלה עולה ${p} ₪ לכל טון. כמה עולה כל ההובלה?`,
+                answer: total, unit: '₪',
+                hint: 'קודם חשבו כמה טון יש בסך הכול, ואז כפלו במחיר לטון',
+                explain: `${n} × ${k} = ${n * k} טון. ${n * k} × ${p} = ${fmt(total)} ₪`
+            };
+        },
+        () => {
+            const f = pick([2000, 2500, 3000]);
+            const h = rnd(2, 6);
+            const pr = pick([2, 3, 4]);
+            const total = f * h * pr;
+            return {
+                icon: '✈️',
+                text: `מטוס שורף ${fmt(f)} ליטר דלק בכל שעת טיסה. הטיסה נמשכת ${h} שעות, וליטר דלק עולה ${pr} ₪. כמה יעלה הדלק לכל הטיסה?`,
+                answer: total, unit: '₪',
+                hint: 'ליטרים בסך הכול = ליטרים לשעה × שעות. ואז כפלו במחיר לליטר',
+                explain: `${fmt(f)} × ${h} = ${fmt(f * h)} ליטר. ${fmt(f * h)} × ${pr} = ${fmt(total)} ₪`
+            };
+        },
+        () => {
+            const n = rnd(2, 4);
+            const s = rnd(3, 12);
+            const load = n * 80 + s * 10;
+            return {
+                icon: '🎈',
+                text: `הסל של כדור פורח יכול לשאת ${load} ק״ג. עולים אליו ${n} נוסעים, וכל אחד שוקל 80 ק״ג. כמה שקי חול של 10 ק״ג אפשר עוד להוסיף?`,
+                answer: s, unit: 'שקים',
+                hint: 'קודם חשבו כמה שוקלים הנוסעים. מה שנשאר מחלקים ב-10',
+                explain: `${n} × 80 = ${n * 80} ק״ג. ${load} − ${n * 80} = ${s * 10} ק״ג. ${s * 10} ÷ 10 = ${s} שקים`
+            };
+        },
+        () => {
+            const n = pick([4, 6, 8, 10]);
+            const p = rnd(6, 18) * 50;
+            const total = n * p;
+            return {
+                icon: '🛞',
+                text: `קנו ${n} צמיגים חדשים למשאית ושילמו ${fmt(total)} ₪. כמה עלה צמיג אחד?`,
+                answer: p, unit: '₪',
+                hint: 'מחיר של אחד = המחיר הכולל ÷ מספר הצמיגים',
+                explain: `${fmt(total)} ÷ ${n} = ${p} ₪`
+            };
+        },
+        () => {
+            const perKg = pick([15, 20, 25, 30]);
+            const kg = rnd(3, 20);
+            return {
+                icon: '📦',
+                text: `משלוח חבילה במטוס עולה ${perKg} ₪ לכל ק״ג. החבילה שוקלת ${kg} ק״ג. כמה עולה המשלוח?`,
+                answer: perKg * kg, unit: '₪',
+                hint: 'מחיר = מחיר לק״ג × מספר הק״ג',
+                explain: `${perKg} × ${kg} = ${perKg * kg} ₪`
+            };
+        }
+    ],
+
+    force: [
+        () => {
+            const m = pick([100, 200, 500]);
+            const a = pick([10, 20, 30, 50]);
+            return {
+                icon: '🚀',
+                text: `טיל במסה של ${m} ק״ג מאיץ בתאוצה של ${a} מטר לשנייה בריבוע. איזה כוח דוחף אותו?`,
+                answer: m * a, unit: 'ניוטון',
+                hint: 'כוח = מסה × תאוצה  (F = m × a)',
+                explain: `${m} × ${a} = ${fmt(m * a)} ניוטון`
+            };
+        },
+        () => {
+            const m = pick([2000, 4000, 5000]);
+            const a = pick([1, 2, 3]);
+            const F = m * a;
+            return {
+                icon: '🚚',
+                text: `המנוע של משאית במסה של ${fmt(m)} ק״ג דוחף אותה בכוח של ${fmt(F)} ניוטון. מה התאוצה שלה (במטר לשנייה בריבוע)?`,
+                answer: a, unit: 'מ׳/ש²',
+                hint: 'תאוצה = כוח ÷ מסה  (a = F ÷ m)',
+                explain: `${fmt(F)} ÷ ${fmt(m)} = ${a} מ׳/ש²`
+            };
+        },
+        () => {
+            const m = rnd(30, 90) * 10;
+            return {
+                icon: '🎈',
+                text: `כדור פורח צריך להרים סל, נוסעים וציוד במסה כוללת של ${m} ק״ג. מה כוח ההרמה המינימלי שהוא צריך? (קחו g = 10)`,
+                answer: m * 10, unit: 'ניוטון',
+                hint: 'כוח הכובד = מסה × 10. כדי להרים, צריך לפחות כוח כזה כלפי מעלה',
+                explain: `${m} × 10 = ${fmt(m * 10)} ניוטון`
+            };
+        },
+        () => {
+            const F = pick([1000, 2000, 5000]);
+            const h = rnd(3, 20);
+            return {
+                icon: '🏗️',
+                text: `מנוף בנמל מרים מכולה מספינה בכוח של ${fmt(F)} ניוטון לגובה של ${h} מטר. כמה עבודה הוא עושה?`,
+                answer: F * h, unit: 'ג׳אול',
+                hint: 'עבודה = כוח × דרך  (W = F × d)',
+                explain: `${fmt(F)} × ${h} = ${fmt(F * h)} ג׳אול`
+            };
+        },
+        () => {
+            const P = pick([500, 1000, 2000, 4000]);
+            const t = pick([5, 10, 20]);
+            const W = P * t;
+            return {
+                icon: '🚢',
+                text: `המנוע של סירה עושה עבודה של ${fmt(W)} ג׳אול ב-${t} שניות. מה ההספק שלו?`,
+                answer: P, unit: 'וואט',
+                hint: 'הספק = עבודה ÷ זמן  (P = W ÷ t)',
+                explain: `${fmt(W)} ÷ ${t} = ${fmt(P)} וואט`
+            };
+        },
+        () => {
+            const tons = pick([2, 4, 5, 8]);
+            const wheels = pick([4, 8]);
+            const perWheel = (tons * 1000 * 10) / wheels;
+            return {
+                icon: '🚚',
+                text: `משאית במסה של ${tons} טון עומדת על ${wheels} גלגלים. המשקל מתחלק שווה בין הגלגלים. איזה כוח לוחץ כל גלגל על הכביש? (טון = 1,000 ק״ג, g = 10)`,
+                answer: perWheel, unit: 'ניוטון',
+                hint: 'קודם: כוח הכובד = מסה בק״ג × 10. ואז מחלקים במספר הגלגלים',
+                explain: `${tons} × 1,000 × 10 = ${fmt(tons * 10000)} ניוטון. ÷ ${wheels} = ${fmt(perWheel)} ניוטון`
+            };
+        }
+    ]
+};
 
 class HumanCalc {
     constructor() {
-        this.currentExercises = [];
-        this.coins = parseInt(localStorage.getItem('humanCalcCoins') || '0');
-        this.currentClassLevel = 1;
+        this.questions = [];
+        this.current = 0;
+        this.score = 0;
         this.audioContext = null;
+        this.$ = (id) => document.getElementById(id);
         this.init();
     }
 
     init() {
-        this.updateCoinsDisplay();
-        this.setupEventListeners();
+        this.$('startBtn').addEventListener('click', () => this.startGame());
+        this.$('againBtn').addEventListener('click', () => this.startGame());
+        this.$('checkBtn').addEventListener('click', () => this.checkAnswer());
+        this.$('hintBtn').addEventListener('click', () => this.showHint());
+        this.$('nextBtn').addEventListener('click', () => this.nextQuestion());
+        this.$('answerInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.checkAnswer();
+        });
+        this.showBestScore();
         this.initAudio();
     }
+
+    // ---------- game flow ----------
+
+    buildQuestions() {
+        // Every topic at least once, then two more at random. No generator twice.
+        const topics = ['speed', 'weight', 'force', pick(['speed', 'weight', 'force']), pick(['speed', 'weight', 'force'])];
+        const used = new Set();
+        const list = this.shuffle(topics).map(topic => {
+            const options = GENERATORS[topic].filter(g => !used.has(g));
+            const gen = pick(options);
+            used.add(gen);
+            return { topic, ...gen(), points: 0, hintUsed: false, done: false };
+        });
+        return list;
+    }
+
+    startGame() {
+        this.questions = this.buildQuestions();
+        this.current = 0;
+        this.score = 0;
+        this.show('gameScreen');
+        this.renderQuestion();
+        this.playSound(440, 0.2, 'sine');
+    }
+
+    renderQuestion() {
+        const q = this.questions[this.current];
+        const topic = TOPICS[q.topic];
+
+        this.$('progressText').textContent = `שאלה ${this.current + 1} מתוך ${QUESTIONS_PER_GAME}`;
+        this.$('scoreText').textContent = `ניקוד: ${this.score}`;
+        this.$('progressFill').style.width = `${(this.current / QUESTIONS_PER_GAME) * 100}%`;
+
+        this.$('questionTopic').textContent = `${topic.icon} ${topic.name}`;
+        this.$('questionIcon').textContent = q.icon;
+        this.$('questionText').textContent = q.text;
+        this.$('answerUnit').textContent = q.unit;
+
+        const input = this.$('answerInput');
+        input.value = '';
+        input.disabled = false;
+        this.$('checkBtn').disabled = false;
+        this.$('hintBtn').disabled = false;
+        this.$('hintBox').classList.remove('show');
+        this.$('feedback').textContent = '';
+        this.$('feedback').className = 'feedback';
+        this.$('nextBtn').classList.add('hidden');
+        this.$('questionCard').classList.remove('correct', 'incorrect');
+        input.focus();
+    }
+
+    showHint() {
+        const q = this.questions[this.current];
+        if (q.done) return;
+        q.hintUsed = true;
+        this.$('hintBox').textContent = `💡 ${q.hint}`;
+        this.$('hintBox').classList.add('show');
+        this.$('hintBtn').disabled = true;
+        this.playSound(400, 0.2, 'sine');
+    }
+
+    checkAnswer() {
+        const q = this.questions[this.current];
+        if (q.done) return;
+
+        const input = this.$('answerInput');
+        const value = parseFloat(input.value);
+        const feedback = this.$('feedback');
+
+        if (isNaN(value)) {
+            feedback.textContent = 'נא לכתוב מספר';
+            feedback.className = 'feedback incorrect';
+            return;
+        }
+
+        q.done = true;
+        q.userAnswer = value;
+        q.correct = Math.abs(value - q.answer) < 0.01;
+        q.points = q.correct ? (q.hintUsed ? 0.5 : 1) : 0;
+        this.score += q.points;
+
+        input.disabled = true;
+        this.$('checkBtn').disabled = true;
+        this.$('hintBtn').disabled = true;
+
+        const card = this.$('questionCard');
+        card.classList.add(q.correct ? 'correct' : 'incorrect');
+
+        if (q.correct) {
+            feedback.innerHTML = `✓ נכון! ${q.hintUsed ? '(חצי נקודה, כי השתמשת ברמז)' : 'כל הכבוד!'}<br><span class="explain">${q.explain}</span>`;
+            feedback.className = 'feedback correct';
+            this.playSuccessSound();
+            if (!q.hintUsed) {
+                this.playCandySound();
+                this.throwCandies(card);
+            }
+        } else {
+            feedback.innerHTML = `✗ לא נכון. התשובה הנכונה: ${fmt(q.answer)} ${q.unit}<br><span class="explain">${q.explain}</span>`;
+            feedback.className = 'feedback incorrect';
+            this.playErrorSound();
+        }
+
+        this.$('scoreText').textContent = `ניקוד: ${this.score}`;
+        const next = this.$('nextBtn');
+        next.textContent = this.current === QUESTIONS_PER_GAME - 1 ? 'לתוצאות 🏁' : 'לשאלה הבאה ←';
+        next.classList.remove('hidden');
+        next.focus();
+    }
+
+    nextQuestion() {
+        this.current++;
+        if (this.current < QUESTIONS_PER_GAME) {
+            this.renderQuestion();
+        } else {
+            this.showResults();
+        }
+    }
+
+    showResults() {
+        this.$('progressFill').style.width = '100%';
+        const s = this.score;
+
+        let title, message;
+        if (s === QUESTIONS_PER_GAME) {
+            title = '🏆 מושלם!';
+            message = 'טייס, קברניט ומהנדס בבת אחת!';
+            this.playCelebrationSound();
+        } else if (s >= 4) {
+            title = '🎉 מצוין!';
+            message = 'כמעט הכול נכון. עוד משחק אחד לציון מושלם?';
+            this.playCelebrationSound();
+        } else if (s >= 2.5) {
+            title = '👍 יפה מאוד!';
+            message = 'אתם בדרך הנכונה. נסו שוב!';
+        } else {
+            title = '💪 לא לוותר!';
+            message = 'קראו את ההסבר בכל שאלה ונסו שוב.';
+        }
+
+        const best = parseFloat(localStorage.getItem('humanCalcBest') || '0');
+        if (s > best) {
+            localStorage.setItem('humanCalcBest', String(s));
+            message += ' 🌟 שיא חדש!';
+        }
+
+        this.$('resultsTitle').textContent = title;
+        this.$('resultsScore').textContent = `הציון שלך: ${s} מתוך ${QUESTIONS_PER_GAME}`;
+        this.$('resultsStars').textContent = '⭐'.repeat(Math.round(s)) || '🙂';
+        this.$('resultsMessage').textContent = message;
+
+        const list = this.$('resultsList');
+        list.innerHTML = '';
+        this.questions.forEach((q, i) => {
+            const li = document.createElement('li');
+            const mark = q.correct ? (q.hintUsed ? '½' : '✓') : '✗';
+            li.className = q.correct ? 'ok' : 'bad';
+            li.textContent = `${mark}  שאלה ${i + 1} ${q.icon}  התשובה: ${fmt(q.answer)} ${q.unit}`;
+            list.appendChild(li);
+        });
+
+        this.show('resultsScreen');
+        this.showBestScore();
+    }
+
+    showBestScore() {
+        const best = localStorage.getItem('humanCalcBest');
+        this.$('bestScore').textContent = best ? `🌟 השיא שלך: ${best} מתוך ${QUESTIONS_PER_GAME}` : '';
+    }
+
+    show(id) {
+        ['startScreen', 'gameScreen', 'resultsScreen'].forEach(s => this.$(s).classList.toggle('hidden', s !== id));
+    }
+
+    shuffle(array) {
+        const a = [...array];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    // ---------- sounds ----------
 
     initAudio() {
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Resume audio context on first user interaction (required for mobile)
+            // Mobile browsers only allow audio after the first touch or click.
             const resumeAudio = async () => {
                 if (this.audioContext && this.audioContext.state === 'suspended') {
-                    try {
-                        await this.audioContext.resume();
-                    } catch (e) {
-                        console.log('Could not resume audio context:', e);
-                    }
+                    try { await this.audioContext.resume(); } catch (e) { /* ignore */ }
                 }
-                // Remove listeners after first interaction
-                document.removeEventListener('touchstart', resumeAudio);
-                document.removeEventListener('click', resumeAudio);
             };
-            
-            // Listen for first user interaction
             document.addEventListener('touchstart', resumeAudio, { once: true });
             document.addEventListener('click', resumeAudio, { once: true });
         } catch (e) {
@@ -44,694 +475,81 @@ class HumanCalc {
 
     async playSound(frequency, duration, type = 'sine') {
         if (!this.audioContext) return;
-
-        // Resume audio context if suspended (required for mobile browsers)
         if (this.audioContext.state === 'suspended') {
-            try {
-                await this.audioContext.resume();
-            } catch (e) {
-                console.log('Could not resume audio context:', e);
-                return;
-            }
+            try { await this.audioContext.resume(); } catch (e) { return; }
         }
-
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
-
         oscillator.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
-
         oscillator.frequency.value = frequency;
         oscillator.type = type;
-
         gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
-
         oscillator.start(this.audioContext.currentTime);
         oscillator.stop(this.audioContext.currentTime + duration);
     }
 
     playSuccessSound() {
-        // Play a cheerful ascending melody
-        const notes = [523.25, 659.25, 783.99, 987.77]; // C, E, G, B
-        notes.forEach((freq, index) => {
-            setTimeout(() => {
-                this.playSound(freq, 0.2, 'sine');
-            }, index * 150);
+        [523.25, 659.25, 783.99, 987.77].forEach((freq, i) => {
+            setTimeout(() => this.playSound(freq, 0.2, 'sine'), i * 150);
         });
     }
 
     playErrorSound() {
-        // Play a gentle descending tone
         this.playSound(200, 0.3, 'sawtooth');
     }
 
     playCelebrationSound() {
-        // Play a victory fanfare
-        const fanfare = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-        fanfare.forEach((freq, index) => {
-            setTimeout(() => {
-                this.playSound(freq, 0.3, 'sine');
-            }, index * 100);
+        [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, i) => {
+            setTimeout(() => this.playSound(freq, 0.3, 'sine'), i * 100);
         });
     }
 
     playCandySound() {
-        // Play a sweet, addicting melody for candy throwing
-        // A playful, ascending melody that sounds like a reward
-        const candyMelody = [
-            { freq: 523.25, duration: 0.15, type: 'sine' },  // C
-            { freq: 659.25, duration: 0.15, type: 'sine' },  // E
-            { freq: 783.99, duration: 0.15, type: 'sine' },  // G
-            { freq: 987.77, duration: 0.2, type: 'sine' },   // B
-            { freq: 1046.50, duration: 0.25, type: 'sine' }, // C (high)
-            { freq: 1318.51, duration: 0.3, type: 'sine' }   // E (high)
-        ];
-        
-        candyMelody.forEach((note, index) => {
-            setTimeout(() => {
-                this.playSound(note.freq, note.duration, note.type);
-            }, index * 80);
+        [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51].forEach((freq, i) => {
+            setTimeout(() => this.playSound(freq, 0.15 + i * 0.03, 'sine'), i * 80);
         });
-        
-        // Add some sparkle sounds with higher frequencies
-        setTimeout(() => {
-            this.playSound(1567.98, 0.2, 'triangle'); // G (high)
-        }, 200);
-        setTimeout(() => {
-            this.playSound(1975.53, 0.2, 'triangle'); // B (high)
-        }, 300);
-    }
-
-    setupEventListeners() {
-        document.getElementById('startBtn').addEventListener('click', () => {
-            this.startNewExerciseSet();
-        });
-
-        // Allow Enter key to submit answers
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const focusedInput = document.activeElement;
-                if (focusedInput && focusedInput.classList.contains('answer-input')) {
-                    const exerciseIndex = parseInt(focusedInput.dataset.index);
-                    this.checkAnswer(exerciseIndex);
-                }
-            }
-        });
-    }
-
-    generateExercise(classLevel) {
-        const level = parseInt(classLevel);
-        let exercise;
-
-        if (level <= 2) {
-            // Class 1-2: Simple addition and subtraction (1-20)
-            const a = Math.floor(Math.random() * 20) + 1;
-            const b = Math.floor(Math.random() * 20) + 1;
-            const operations = ['+', '-'];
-            const op = operations[Math.floor(Math.random() * operations.length)];
-            
-            if (op === '+') {
-                exercise = { question: `${a} + ${b}`, answer: a + b };
-            } else {
-                const max = Math.max(a, b);
-                const min = Math.min(a, b);
-                exercise = { question: `${max} - ${min}`, answer: max - min };
-            }
-        } else if (level <= 4) {
-            // Class 3-4: Addition, subtraction, simple multiplication (1-100)
-            const a = Math.floor(Math.random() * 100) + 1;
-            const b = Math.floor(Math.random() * 100) + 1;
-            const operations = ['+', '-', '*'];
-            const op = operations[Math.floor(Math.random() * operations.length)];
-            
-            if (op === '+') {
-                exercise = { question: `${a} + ${b}`, answer: a + b };
-            } else if (op === '-') {
-                const max = Math.max(a, b);
-                const min = Math.min(a, b);
-                exercise = { question: `${max} - ${min}`, answer: max - min };
-            } else {
-                const smallA = Math.floor(Math.random() * 10) + 1;
-                const smallB = Math.floor(Math.random() * 10) + 1;
-                exercise = { question: `${smallA} × ${smallB}`, answer: smallA * smallB };
-            }
-        } else if (level <= 6) {
-            // Class 5-6: All operations, larger numbers, simple division
-            const operations = ['+', '-', '*', '/'];
-            const op = operations[Math.floor(Math.random() * operations.length)];
-            
-            if (op === '+') {
-                const a = Math.floor(Math.random() * 500) + 1;
-                const b = Math.floor(Math.random() * 500) + 1;
-                exercise = { question: `${a} + ${b}`, answer: a + b };
-            } else if (op === '-') {
-                const a = Math.floor(Math.random() * 500) + 1;
-                const b = Math.floor(Math.random() * a) + 1;
-                exercise = { question: `${a} - ${b}`, answer: a - b };
-            } else if (op === '*') {
-                const a = Math.floor(Math.random() * 20) + 1;
-                const b = Math.floor(Math.random() * 20) + 1;
-                exercise = { question: `${a} × ${b}`, answer: a * b };
-            } else {
-                const b = Math.floor(Math.random() * 12) + 1;
-                const a = b * (Math.floor(Math.random() * 10) + 1);
-                exercise = { question: `${a} ÷ ${b}`, answer: a / b };
-            }
-        } else if (level <= 8) {
-            // Class 7-8: Fractions, decimals, negative numbers
-            const types = ['basic', 'decimal', 'fraction', 'negative'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            
-            if (type === 'basic') {
-                const a = Math.floor(Math.random() * 1000) + 1;
-                const b = Math.floor(Math.random() * 1000) + 1;
-                const op = ['+', '-', '*'][Math.floor(Math.random() * 3)];
-                if (op === '+') {
-                    exercise = { question: `${a} + ${b}`, answer: a + b };
-                } else if (op === '-') {
-                    exercise = { question: `${a} - ${b}`, answer: a - b };
-                } else {
-                    exercise = { question: `${a} × ${b}`, answer: a * b };
-                }
-            } else if (type === 'decimal') {
-                const a = (Math.random() * 100).toFixed(1);
-                const b = (Math.random() * 100).toFixed(1);
-                const op = ['+', '-'][Math.floor(Math.random() * 2)];
-                const result = op === '+' ? parseFloat(a) + parseFloat(b) : parseFloat(a) - parseFloat(b);
-                exercise = { question: `${a} ${op} ${b}`, answer: parseFloat(result.toFixed(1)) };
-            } else if (type === 'fraction') {
-                const num1 = Math.floor(Math.random() * 10) + 1;
-                const den1 = Math.floor(Math.random() * 10) + 1;
-                const num2 = Math.floor(Math.random() * 10) + 1;
-                const den2 = Math.floor(Math.random() * 10) + 1;
-                const op = ['+', '-'][Math.floor(Math.random() * 2)];
-                // Simplified fraction addition/subtraction
-                if (den1 === den2) {
-                    const result = op === '+' ? num1 + num2 : num1 - num2;
-                    exercise = { question: `${num1}/${den1} ${op} ${num2}/${den2}`, answer: result / den1 };
-                } else {
-                    const lcm = den1 * den2;
-                    const newNum1 = num1 * den2;
-                    const newNum2 = num2 * den1;
-                    const result = op === '+' ? newNum1 + newNum2 : newNum1 - newNum2;
-                    exercise = { question: `${num1}/${den1} ${op} ${num2}/${den2}`, answer: result / lcm };
-                }
-            } else {
-                const a = Math.floor(Math.random() * 100) - 50;
-                const b = Math.floor(Math.random() * 100) - 50;
-                const op = ['+', '-'][Math.floor(Math.random() * 2)];
-                exercise = { question: `(${a}) ${op} (${b})`, answer: op === '+' ? a + b : a - b };
-            }
-        } else if (level <= 10) {
-            // Class 9-10: Algebra, powers, square roots
-            const types = ['algebra', 'power', 'sqrt', 'complex'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            
-            if (type === 'algebra') {
-                const a = Math.floor(Math.random() * 20) + 1;
-                const b = Math.floor(Math.random() * 20) + 1;
-                const c = Math.floor(Math.random() * 20) + 1;
-                exercise = { question: `${a}x + ${b} = ${a * c + b}`, answer: c };
-            } else if (type === 'power') {
-                const base = Math.floor(Math.random() * 10) + 2;
-                const exp = Math.floor(Math.random() * 4) + 2;
-                exercise = { question: `${base}^${exp}`, answer: Math.pow(base, exp) };
-            } else if (type === 'sqrt') {
-                const num = Math.floor(Math.random() * 20) + 1;
-                const square = num * num;
-                exercise = { question: `√${square}`, answer: num };
-            } else {
-                const a = Math.floor(Math.random() * 100) + 1;
-                const b = Math.floor(Math.random() * 100) + 1;
-                const c = Math.floor(Math.random() * 100) + 1;
-                exercise = { question: `${a} × ${b} + ${c}`, answer: a * b + c };
-            }
-        } else {
-            // Class 11-12: Advanced algebra, trigonometry, logarithms
-            const types = ['advanced', 'trig', 'log', 'complex'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            
-            if (type === 'advanced') {
-                const a = Math.floor(Math.random() * 20) + 1;
-                const b = Math.floor(Math.random() * 20) + 1;
-                const c = Math.floor(Math.random() * 20) + 1;
-                exercise = { question: `${a}x² + ${b}x = ${a * c * c + b * c}`, answer: c };
-            } else if (type === 'trig') {
-                const angles = [0, 30, 45, 60, 90];
-                const angle = angles[Math.floor(Math.random() * angles.length)];
-                const funcs = ['sin', 'cos'];
-                const func = funcs[Math.floor(Math.random() * funcs.length)];
-                let answer;
-                if (func === 'sin') {
-                    answer = Math.sin(angle * Math.PI / 180);
-                } else {
-                    answer = Math.cos(angle * Math.PI / 180);
-                }
-                exercise = { question: `${func}(${angle}°)`, answer: parseFloat(answer.toFixed(3)) };
-            } else if (type === 'log') {
-                const base = Math.floor(Math.random() * 5) + 2;
-                const exp = Math.floor(Math.random() * 5) + 1;
-                const num = Math.pow(base, exp);
-                exercise = { question: `log${base}(${num})`, answer: exp };
-            } else {
-                const a = Math.floor(Math.random() * 50) + 1;
-                const b = Math.floor(Math.random() * 50) + 1;
-                const c = Math.floor(Math.random() * 50) + 1;
-                exercise = { question: `(${a} + ${b}) × ${c} - ${a}`, answer: (a + b) * c - a };
-            }
-        }
-
-        exercise.userAnswer = null;
-        exercise.correct = null;
-        return exercise;
-    }
-
-    startNewExerciseSet() {
-        const classLevel = document.getElementById('classLevel').value;
-        this.currentClassLevel = parseInt(classLevel);
-        this.currentExercises = [];
-        
-        // Generate 10 exercises
-        for (let i = 0; i < 10; i++) {
-            this.currentExercises.push(this.generateExercise(classLevel));
-        }
-
-        this.renderExercises();
-        document.getElementById('resultsContainer').classList.remove('show');
-        
-        // Play a gentle sound when starting
-        this.playSound(440, 0.2, 'sine');
-    }
-
-    renderExercises() {
-        const container = document.getElementById('exercisesContainer');
-        container.innerHTML = '';
-
-        this.currentExercises.forEach((exercise, index) => {
-            const exerciseDiv = document.createElement('div');
-            exerciseDiv.className = 'exercise-item';
-            exerciseDiv.id = `exercise-${index}`;
-
-            const questionDiv = document.createElement('div');
-            questionDiv.className = 'exercise-question';
-            questionDiv.innerHTML = `
-                <span class="exercise-number">${index + 1}/10</span>
-                <span>${exercise.question} = </span>
-            `;
-
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.className = 'answer-input';
-            input.dataset.index = index;
-            input.step = 'any';
-            input.placeholder = 'Your answer';
-
-            const checkBtn = document.createElement('button');
-            checkBtn.className = 'check-btn';
-            checkBtn.textContent = 'Check';
-            checkBtn.onclick = () => this.checkAnswer(index);
-
-            const hintBtn = document.createElement('button');
-            hintBtn.className = 'hint-btn';
-            hintBtn.textContent = '💡 Hint';
-            hintBtn.onclick = () => this.showHint(index, 2);
-
-            const buttonContainer = document.createElement('div');
-            buttonContainer.className = 'button-container';
-            buttonContainer.appendChild(checkBtn);
-            buttonContainer.appendChild(hintBtn);
-
-            const feedback = document.createElement('div');
-            feedback.className = 'feedback';
-            feedback.id = `feedback-${index}`;
-
-            const hintDiv = document.createElement('div');
-            hintDiv.className = 'hint-display';
-            hintDiv.id = `hint-${index}`;
-            hintDiv.style.display = 'none';
-
-            questionDiv.appendChild(input);
-            exerciseDiv.appendChild(questionDiv);
-            exerciseDiv.appendChild(buttonContainer);
-            exerciseDiv.appendChild(hintDiv);
-            exerciseDiv.appendChild(feedback);
-            container.appendChild(exerciseDiv);
-        });
-
-        // Focus on first input
-        const firstInput = container.querySelector('.answer-input');
-        if (firstInput) {
-            firstInput.focus();
-        }
-    }
-
-    checkAnswer(index) {
-        const exercise = this.currentExercises[index];
-        const input = document.querySelector(`#exercise-${index} .answer-input`);
-        const feedback = document.getElementById(`feedback-${index}`);
-        const exerciseDiv = document.getElementById(`exercise-${index}`);
-        const checkBtn = exerciseDiv.querySelector('.check-btn');
-
-        const userAnswer = parseFloat(input.value);
-        
-        if (isNaN(userAnswer)) {
-            feedback.textContent = 'Please enter a number!';
-            feedback.className = 'feedback incorrect';
-            return;
-        }
-
-        exercise.userAnswer = userAnswer;
-        
-        // Allow small floating point differences
-        const tolerance = 0.01;
-        const isCorrect = Math.abs(userAnswer - exercise.answer) < tolerance;
-
-        exercise.correct = isCorrect;
-        exerciseDiv.classList.remove('correct', 'incorrect');
-        exerciseDiv.classList.add(isCorrect ? 'correct' : 'incorrect');
-        
-        input.disabled = true;
-        checkBtn.disabled = true;
-
-        if (isCorrect) {
-            feedback.textContent = '✓ Correct! Great job!';
-            feedback.className = 'feedback correct';
-            this.playSuccessSound();
-            
-            // Throw candies if no hint was used
-            if (!exercise.hintUsed) {
-                this.playCandySound();
-                this.throwCandies(exerciseDiv);
-            }
-        } else {
-            feedback.textContent = `✗ Incorrect. The correct answer is ${exercise.answer}`;
-            feedback.className = 'feedback incorrect';
-            this.playErrorSound();
-        }
-
-        // Check if all exercises are completed
-        setTimeout(() => {
-            this.checkAllCompleted();
-        }, 500);
-    }
-
-    checkAllCompleted() {
-        // An exercise is completed if it has been checked (correct is not null) or disqualified
-        const allCompleted = this.currentExercises.every(ex => ex.correct !== null || ex.disqualified === true);
-        
-        if (allCompleted) {
-            const allCorrect = this.currentExercises.every(ex => ex.correct === true);
-            this.showResults(allCorrect);
-        }
-    }
-
-    showResults(allCorrect) {
-        const resultsContainer = document.getElementById('resultsContainer');
-        const correctCount = this.currentExercises.filter(ex => ex.correct === true).length;
-        
-        let newCoins = 0;
-        if (allCorrect) {
-            // Award Coins equal to the class level (Level 1 = 1, Level 2 = 2, etc.)
-            newCoins = this.currentClassLevel;
-            this.coins += newCoins;
-            localStorage.setItem('humanCalcCoins', this.coins.toString());
-            this.updateCoinsDisplay();
-            this.playCelebrationSound();
-        }
-
-        resultsContainer.innerHTML = `
-            <div class="results-title">${allCorrect ? '🎉 Perfect Score! 🎉' : 'Exercise Set Complete!'}</div>
-            <div class="results-score">You got ${correctCount} out of 10 correct!</div>
-            ${allCorrect ? `
-                <div class="new-stars">🪙 You earned ${newCoins} Coins! 🪙</div>
-                <div class="celebration">🌟✨🎊✨🌟</div>
-            ` : '<div style="font-size: 1.2em; margin-top: 20px;">Keep practicing to earn Coins!</div>'}
-        `;
-        
-        resultsContainer.classList.add('show');
-    }
-
-    showHint(index, hintType) {
-        const exercise = this.currentExercises[index];
-        
-        // Mark that hint was used for this exercise
-        exercise.hintUsed = true;
-        
-        // Show multiple choice hint
-        this.showMultipleChoiceHint(index, exercise);
-    }
-
-    showMultipleChoiceHint(index, exercise) {
-        const answer = exercise.answer;
-        const question = exercise.question;
-
-        // Generate 3 wrong answers that are plausible
-        const wrongAnswers = this.generateWrongAnswers(answer);
-        
-        // Create array with correct and wrong answers
-        const allAnswers = [answer, ...wrongAnswers];
-        
-        // Shuffle the answers
-        const shuffledAnswers = this.shuffleArray([...allAnswers]);
-
-        // Display modal
-        document.getElementById('modalQuestion').textContent = question + ' = ?';
-        const container = document.getElementById('multipleChoiceContainer');
-        container.innerHTML = '';
-        document.getElementById('choiceFeedback').textContent = '';
-        document.getElementById('choiceFeedback').className = 'choice-feedback';
-
-        // Create answer buttons
-        shuffledAnswers.forEach((option, i) => {
-            const button = document.createElement('button');
-            button.className = 'choice-btn';
-            button.textContent = option;
-            button.onclick = () => this.checkChoiceAnswer(option, answer, index);
-            container.appendChild(button);
-        });
-
-        // Store the exercise index for reference
-        document.getElementById('hintModal').dataset.exerciseIndex = index;
-
-        // Show modal
-        document.getElementById('hintModal').style.display = 'block';
-
-        // Play a sound
-        this.playSound(400, 0.2, 'sine');
-    }
-
-    generateWrongAnswers(correctAnswer) {
-        const wrongAnswers = [];
-        const tolerance = 0.01;
-        const maxAttempts = 50;
-        let attempts = 0;
-        
-        // Generate 3 wrong answers
-        while (wrongAnswers.length < 3 && attempts < maxAttempts) {
-            attempts++;
-            let wrongAnswer;
-            
-            if (Number.isInteger(correctAnswer)) {
-                // For integers, generate answers that are plausible but not exact
-                const baseOffset = Math.max(1, Math.floor(Math.abs(correctAnswer) * 0.1) || 1);
-                const offset = Math.floor(Math.random() * (baseOffset * 2 + 5)) + 1;
-                const sign = Math.random() < 0.5 ? 1 : -1;
-                wrongAnswer = correctAnswer + (offset * sign);
-                
-                // Make sure it's different from correct answer and other wrong answers
-                if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
-                    wrongAnswers.push(wrongAnswer);
-                }
-            } else {
-                // For decimals, generate answers with different decimal values
-                const absValue = Math.abs(correctAnswer);
-                const multiplier = absValue < 1 ? 0.5 : Math.max(0.1, absValue * 0.15);
-                const offset = (Math.random() * 2 - 1) * multiplier;
-                wrongAnswer = parseFloat((correctAnswer + offset).toFixed(3));
-                
-                // Make sure it's different enough from correct and other wrong answers
-                const isDifferent = Math.abs(wrongAnswer - correctAnswer) > tolerance;
-                const isUnique = !wrongAnswers.some(wa => Math.abs(wa - wrongAnswer) < tolerance);
-                
-                if (isDifferent && isUnique) {
-                    wrongAnswers.push(wrongAnswer);
-                }
-            }
-        }
-        
-        // If we couldn't generate enough, add some fallback wrong answers
-        while (wrongAnswers.length < 3) {
-            const fallback = correctAnswer + (wrongAnswers.length + 1) * 10;
-            if (!wrongAnswers.includes(fallback)) {
-                wrongAnswers.push(fallback);
-            }
-        }
-        
-        return wrongAnswers;
-    }
-
-    shuffleArray(array) {
-        const shuffled = [...array];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled;
-    }
-
-    checkChoiceAnswer(selectedAnswer, correctAnswer, exerciseIndex) {
-        const feedback = document.getElementById('choiceFeedback');
-        const tolerance = 0.01;
-        const selectedNum = typeof selectedAnswer === 'string' ? parseFloat(selectedAnswer) : selectedAnswer;
-        const isCorrect = Math.abs(selectedNum - correctAnswer) < tolerance;
-
-        // Disable all buttons
-        const buttons = document.querySelectorAll('.choice-btn');
-        buttons.forEach(btn => {
-            btn.disabled = true;
-            const btnValue = parseFloat(btn.textContent);
-            if (Math.abs(btnValue - correctAnswer) < tolerance) {
-                btn.classList.add('correct-choice');
-            } else if (Math.abs(btnValue - selectedNum) < tolerance) {
-                btn.classList.add('wrong-choice');
-            }
-        });
-
-        if (isCorrect) {
-            feedback.textContent = '✓ Correct! Great job!';
-            feedback.className = 'choice-feedback correct';
-            this.playSuccessSound();
-            
-            // Auto-fill the answer in the exercise input field
-            const exerciseDiv = document.getElementById(`exercise-${exerciseIndex}`);
-            const input = exerciseDiv.querySelector('.answer-input');
-            if (input && !input.disabled) {
-                input.value = correctAnswer;
-                // Optionally auto-check the answer
-                // this.checkAnswer(exerciseIndex);
-            }
-        } else {
-            feedback.textContent = `✗ Incorrect. The correct answer is ${correctAnswer}`;
-            feedback.className = 'choice-feedback incorrect';
-            this.playErrorSound();
-            
-            // Disqualify the exercise - mark it as incorrect
-            this.disqualifyExercise(exerciseIndex, correctAnswer);
-        }
-    }
-
-    disqualifyExercise(index, correctAnswer) {
-        const exercise = this.currentExercises[index];
-        const exerciseDiv = document.getElementById(`exercise-${index}`);
-        const input = exerciseDiv.querySelector('.answer-input');
-        const checkBtn = exerciseDiv.querySelector('.check-btn');
-        const feedback = document.getElementById(`feedback-${index}`);
-        const hintBtn = exerciseDiv.querySelector('.hint-btn');
-
-        // Mark exercise as incorrect
-        exercise.correct = false;
-        exercise.userAnswer = null;
-        exercise.disqualified = true;
-
-        // Disable input and buttons
-        input.disabled = true;
-        checkBtn.disabled = true;
-        if (hintBtn) {
-            hintBtn.disabled = true;
-        }
-
-        // Update visual feedback
-        exerciseDiv.classList.remove('correct', 'incorrect');
-        exerciseDiv.classList.add('incorrect');
-        feedback.textContent = `✗ Disqualified! You chose the wrong answer in the hint. Correct answer: ${correctAnswer}`;
-        feedback.className = 'feedback incorrect';
-
-        // Check if all exercises are completed
-        setTimeout(() => {
-            this.checkAllCompleted();
-        }, 500);
-    }
-
-    updateCoinsDisplay() {
-        document.getElementById('starsCount').textContent = this.coins;
+        setTimeout(() => this.playSound(1567.98, 0.2, 'triangle'), 200);
+        setTimeout(() => this.playSound(1975.53, 0.2, 'triangle'), 300);
     }
 
     throwCandies(element) {
-        const candyEmojis = ['🍬', '🍭', '🍫', '🍪', '🍰', '🧁', '🍩', '🍯'];
+        const candyEmojis = ['🍬', '🍭', '🍫', '🍪', '🧁', '🍩', '✈️', '🚀'];
         const numCandies = 8;
-        
-        // Use requestAnimationFrame to ensure element is rendered
         requestAnimationFrame(() => {
             const rect = element.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
             const startX = rect.left + rect.width / 2;
             const startY = rect.top + rect.height / 2;
-            
-            // Check if element is visible (mobile viewport might be different)
-            if (rect.width === 0 || rect.height === 0) {
-                console.log('Element not visible, skipping candy animation');
-                return;
-            }
-            
+
             for (let i = 0; i < numCandies; i++) {
                 setTimeout(() => {
                     const candy = document.createElement('div');
                     candy.className = 'candy';
-                    candy.textContent = candyEmojis[Math.floor(Math.random() * candyEmojis.length)];
-                    
-                    // Set initial position with better mobile support
-                    candy.style.position = 'fixed';
+                    candy.textContent = pick(candyEmojis);
                     candy.style.left = startX + 'px';
                     candy.style.top = startY + 'px';
-                    candy.style.opacity = '1';
-                    candy.style.transform = 'translate(0, 0) rotate(0deg)';
-                    candy.style.willChange = 'transform, opacity'; // Optimize for mobile
-                    
                     document.body.appendChild(candy);
-                    
-                    // Force reflow to ensure initial position is set
                     candy.offsetHeight;
-                    
-                    // Calculate random direction and distance
+
                     const angle = (Math.PI * 2 * i) / numCandies + (Math.random() - 0.5) * 0.5;
                     const distance = 150 + Math.random() * 100;
                     const endX = Math.cos(angle) * distance;
-                    const endY = Math.sin(angle) * distance - 50; // Slight upward arc
-                    
-                    // Random rotation
-                    const rotation = Math.random() * 720 - 360; // -360 to 360 degrees
-                    
-                    // Trigger animation with better mobile support
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            candy.style.transform = `translate(${endX}px, ${endY}px) rotate(${rotation}deg)`;
-                            candy.style.opacity = '0';
-                        });
-                    });
-                    
-                    // Remove after animation
-                    setTimeout(() => {
-                        if (candy.parentNode) {
-                            candy.parentNode.removeChild(candy);
-                        }
-                    }, 2000);
-                }, i * 50); // Stagger the candies
+                    const endY = Math.sin(angle) * distance - 50;
+                    const rotation = Math.random() * 720 - 360;
+
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        candy.style.transform = `translate(${endX}px, ${endY}px) rotate(${rotation}deg)`;
+                        candy.style.opacity = '0';
+                    }));
+                    setTimeout(() => candy.remove(), 2000);
+                }, i * 50);
             }
         });
     }
 }
 
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('hintModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
-}
-
-// Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new HumanCalc();
 });
-

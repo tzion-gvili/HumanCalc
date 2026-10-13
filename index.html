@@ -1,68 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HumanCalc - Math Practice for All Ages</title>
+    <title>HumanCalc - חידות של תנועה, משקל וכוח</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🌟 HumanCalc 🌟</h1>
-            <p class="subtitle">Math Practice from Class 1 to Class 12</p>
+            <h1>🚀 HumanCalc ✈️</h1>
+            <p class="subtitle">5 חידות על מטוסים, ספינות, משאיות, טילים וכדורים פורחים</p>
         </header>
 
-        <div class="main-content">
-            <div class="level-selector">
-                <label for="classLevel">Select Class Level:</label>
-                <select id="classLevel">
-                    <option value="1">Class 1 (Ages 7-8)</option>
-                    <option value="2">Class 2 (Ages 8-9)</option>
-                    <option value="3">Class 3 (Ages 9-10)</option>
-                    <option value="4">Class 4 (Ages 10-11)</option>
-                    <option value="5">Class 5 (Ages 11-12)</option>
-                    <option value="6">Class 6 (Ages 12-13)</option>
-                    <option value="7">Class 7 (Ages 13-14)</option>
-                    <option value="8">Class 8 (Ages 14-15)</option>
-                    <option value="9">Class 9 (Ages 15-16)</option>
-                    <option value="10">Class 10 (Ages 16-17)</option>
-                    <option value="11">Class 11 (Ages 17-18)</option>
-                    <option value="12">Class 12 (Ages 18+)</option>
-                </select>
-                <button id="startBtn" class="btn-primary">Start New Exercise Set</button>
+        <div id="startScreen" class="screen">
+            <div class="topics">
+                <div class="topic">⏱️ מהירות, זמן ודרך</div>
+                <div class="topic">⚖️ משקלים ומחירים</div>
+                <div class="topic">💥 כוח ותוצאות</div>
             </div>
-
-            <div class="stars-display">
-                <div class="stars-container">
-                    <div class="coins-icon">
-                        <span class="coin coin-gold">🪙</span>
-                        <span class="coin coin-silver">🪙</span>
-                        <span class="coin coin-gold">🪙</span>
-                    </div>
-                    <span class="stars-label">Your Coins: </span>
-                    <span id="starsCount" class="stars-count">0</span>
-                    <span class="star-icon">⭐</span>
-                </div>
-            </div>
-
-            <div id="exercisesContainer" class="exercises-container"></div>
-
-            <div id="resultsContainer" class="results-container"></div>
+            <p class="intro">בכל משחק 5 שאלות. תשובה נכונה = נקודה. תשובה נכונה עם רמז = חצי נקודה.</p>
+            <div id="bestScore" class="best-score"></div>
+            <button id="startBtn" class="btn-primary">יוצאים לדרך!</button>
         </div>
 
-        <!-- Multiple Choice Hint Modal -->
-        <div id="hintModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>💡 Hint: Multiple Choice</h2>
-                    <span class="close-modal" onclick="document.getElementById('hintModal').style.display='none'">&times;</span>
+        <div id="gameScreen" class="screen hidden">
+            <div class="progress">
+                <span id="progressText"></span>
+                <span id="scoreText"></span>
+            </div>
+            <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+
+            <div id="questionCard" class="question-card">
+                <div id="questionTopic" class="question-topic"></div>
+                <div id="questionIcon" class="question-icon"></div>
+                <p id="questionText" class="question-text"></p>
+
+                <div class="answer-row">
+                    <input id="answerInput" class="answer-input" type="number" step="any" dir="ltr" placeholder="?">
+                    <span id="answerUnit" class="answer-unit"></span>
                 </div>
-                <div class="modal-body">
-                    <p class="modal-question" id="modalQuestion"></p>
-                    <div class="multiple-choice-container" id="multipleChoiceContainer"></div>
-                    <div id="choiceFeedback" class="choice-feedback"></div>
+
+                <div class="button-container">
+                    <button id="checkBtn" class="check-btn">בדיקה</button>
+                    <button id="hintBtn" class="hint-btn">💡 רמז</button>
                 </div>
+
+                <div id="hintBox" class="hint-display"></div>
+                <div id="feedback" class="feedback"></div>
+                <button id="nextBtn" class="btn-primary next-btn hidden">לשאלה הבאה ←</button>
+            </div>
+        </div>
+
+        <div id="resultsScreen" class="screen hidden">
+            <div class="results-container">
+                <div id="resultsTitle" class="results-title"></div>
+                <div id="resultsScore" class="results-score"></div>
+                <div id="resultsStars" class="celebration"></div>
+                <div id="resultsMessage" class="results-message"></div>
+                <ul id="resultsList" class="results-list"></ul>
+                <button id="againBtn" class="btn-primary">משחק חדש</button>
             </div>
         </div>
 
@@ -74,4 +71,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
